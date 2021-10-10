@@ -1,12 +1,16 @@
 # https://stackoverflow.com/a/12099167
 ifeq ($(OS),Windows_NT)
-    RM=del -fR
+    # RM=del -fr # I am a little confused here
+    RM=rm -fr
 else
     RM=rm -fr
 endif
 
 
-all: boot.bin
+all: boot.bin # shit.iso
+
+# shit.iso: boot.bin
+# 	# dd if=boot.bin of=shit.iso
 
 boot.bin: boot.asm
 	nasm boot.asm -f bin -o boot.bin
@@ -17,9 +21,4 @@ run: boot.bin
 
 .PHONY: clean
 clean:
-	$(RM) boot.bin 
-
-
-# shit.iso
-# shit.iso: boot.bin
-# dd if=boot.bin of=shit.iso
+	$(RM) *.bin 
