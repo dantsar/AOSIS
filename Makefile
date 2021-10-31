@@ -1,24 +1,33 @@
-# https://stackoverflow.com/a/12099167
-ifeq ($(OS),Windows_NT)
-    # RM=del -fr # I am a little confused here
-    RM=rm -fr
-else
-    RM=rm -fr
-endif
+# Credit should go to Brett Vickers' project MonkOS
+# for the idea of the build environment
 
+DIR_ROOT := .
+include $(DIR_ROOT)/config.mk
 
-all: boot.bin # shit.iso
+# -----------------------------------------------------------------------------
+# Build targets
+# -----------------------------------------------------------------------------
 
-# shit.iso: boot.bin
-# 	# dd if=boot.bin of=shit.iso
+all: mkbuild iso
 
-boot.bin: boot.asm
-	nasm boot.asm -f bin -o boot.bin
+docker: .force
+	rm -rf iso
+	@$(DIR_DOCKER)/build.sh iso
 
-.PHONY: run
-run: boot.bin
-	qemu-system-x86_64 -hda boot.bin
+.PHONY: mkbuild
+mkbuild:
+	@mkdir -p $(DIR_BUILD)
+
+iso: mkbuild
+	@echo "CREATING ISO"
+	make --directory=$(DIR_KERNEL)
+
+run: .force
+	make --directory=$(DIR_KERNEL) run
 
 .PHONY: clean
 clean:
-	$(RM) *.bin 
+	rm -rf $(DIR_BUILD) 
+	make --directory=$(DIR_KERNEL) clean
+
+.force:
