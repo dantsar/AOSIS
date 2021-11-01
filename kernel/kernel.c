@@ -1,12 +1,74 @@
 #include <stddef.h>
 #include <stdint.h>
 
-size_t strlen(const char *str) {
+// strings.h
+size_t strlen(const char *str)
+{
 	size_t len = 0;
 	while(str[len]) {
 		len++;
 	}
 	return len;
+}
+
+size_t strnlen(const char *str, size_t maxlen)
+{
+	size_t len = 0;
+	for (size_t i = 0; i < maxlen; i++) {
+		if (str[i] == '\0') {
+			break;
+		}
+	}
+	return len;
+}
+
+int memcmp(const void *s1, const void *s2, size_t n)
+{
+	const char *s1ptr = (const char *) s1;
+	const char *s2ptr = (const char *) s2;
+	int cmp = 0;
+	for (size_t i = 0; i < n; i++) {
+		if (s1ptr[i] != s2ptr[i]) {
+			cmp = s1ptr[i] - s2ptr[i];
+			break;
+		}
+	}
+	return cmp;
+}
+
+void *memcpy(void *dest, const void *src, size_t n)
+{
+	unsigned char *destptr = (unsigned char *) dest;
+	const unsigned char *srcptr = (const unsigned char *) src;
+	for (size_t i = 0; i < n; i++) {
+		destptr[i] = srcptr[i];
+	}
+	return dest;
+}
+
+void *memmove(void *dest, const void *src, size_t n){
+	unsigned char *destptr = (unsigned char *) dest;
+	const unsigned char *srcptr = (const unsigned char *) src;
+
+	if (dest < src) {
+		for (size_t i = 0; i < n; i++) {
+			destptr[i] = srcptr[i];
+		}
+	} else {
+		for (size_t i = n; i != 0; i--) {
+			destptr[i-1] = srcptr[i-1];
+		}
+	}
+	return destptr;
+}
+
+void *memset(void *s, int c, size_t n)
+{
+	unsigned char *sptr = (unsigned char *) s;
+	for (size_t i = 0; i < n; i++) {
+		sptr[i] = c;
+	}
+	return sptr;
 }
 
 /* -------------------------------------------------------- */
@@ -20,6 +82,7 @@ uint8_t terminal_color;
 uint16_t *terminal_buffer;
 
 /* constants for Hardware defined text mode colors */
+// vga.h 
 enum vga_color {
 	VGA_COLOR_BLACK = 0,
 	VGA_COLOR_BLUE = 1,
@@ -137,5 +200,4 @@ void kernel_main()
 		terminal_putchar('\n');
 	}
 	terminal_printstr("LAST LINE");
-
 }

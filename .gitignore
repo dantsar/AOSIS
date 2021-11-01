@@ -1,4 +1,6 @@
 *.bin
 *.iso
+*.o
+*.a
 test*
 old*

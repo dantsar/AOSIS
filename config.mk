@@ -4,6 +4,7 @@
 DIR_DOCKER		:= $(DIR_ROOT)/docker
 DIR_KERNEL		:= $(DIR_ROOT)/kernel
 DIR_BUILD		:= $(DIR_ROOT)/build
+DIR_SCRIPTS		:= $(DIR_ROOT)/scripts
 
 # CC				:= x86_64-elf-gcc
 CC				:= i686-elf-gcc

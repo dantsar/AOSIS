@@ -1,33 +1,31 @@
 # Credit should go to Brett Vickers' project MonkOS
 # for the idea of the build environment
 
-DIR_ROOT := .
+DIR_ROOT 	:= .
+
 include $(DIR_ROOT)/config.mk
 
 # -----------------------------------------------------------------------------
 # Build targets
 # -----------------------------------------------------------------------------
 
-all: mkbuild iso
+all: iso 
 
-docker: .force
-	rm -rf iso
+.PHONY: docker
+docker: 
 	@$(DIR_DOCKER)/build.sh iso
 
-.PHONY: mkbuild
-mkbuild:
-	@mkdir -p $(DIR_BUILD)
-
-iso: mkbuild
+.PHONY: iso 
+iso: 
 	@echo "CREATING ISO"
-	make --directory=$(DIR_KERNEL)
+	@$(DIR_SCRIPTS)/build.sh
+	@$(DIR_SCRIPTS)/iso.sh
 
-run: .force
-	make --directory=$(DIR_KERNEL) run
+.PHONY: run
+run: 
+	@$(DIR_SCRIPTS)/run.sh
 
 .PHONY: clean
 clean:
-	rm -rf $(DIR_BUILD) 
-	make --directory=$(DIR_KERNEL) clean
-
-.force:
+	@rm -rf $(DIR_BUILD) 
+	@make --directory=$(DIR_KERNEL) clean
