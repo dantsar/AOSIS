@@ -1,2 +1,0 @@
-https://wiki.osdev.org/Babystep1
-https://github.com/beevik/MonkOS
