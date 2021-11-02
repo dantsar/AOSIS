@@ -1,6 +1,10 @@
-; CODE_SEG equ GDT_code - GDT_start
+CODE_SEG equ GDT_code - GDT_START
 ; DATA_SEG equ GDT_data - GDT_start
+
+; Reference resource
+; https://web.archive.org/web/20190424213806/http://www.osdever.net/tutorials/view/the-world-of-protected-mode
 __init_gdt__:
+    cli
     lgdt [GDT_DESCRIPTOR] ; load the GDT
     
     ; change last bit of cr0 to one to actually 
@@ -8,8 +12,14 @@ __init_gdt__:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
+
+    ; clear instruction pipeline by performing a far jump
+    jmp CODE_SEG:clear_pipeline
+[BITS 32]
+clear_pipeline:
     ret
-                                    
+
+; https://en.wikipedia.org/wiki/Global_Descriptor_Table
 GDT_START:
     GDT_null:
         dq 0x0  ; beginning of a GDT needs to have two null bytes
