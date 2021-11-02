@@ -30,4 +30,4 @@ The docker image will be pulled, and the project will be built.
 ## Resources
 Here is a small list of resources that were used throughout the project:
 * [OSDev Wiki](https://wiki.osdev.org/Main_Page/) : this is an invaluable resource and the barebones and meaty skeleton examples were extremely helpful
-* [MonkOS](https://github.com/beevik/MonkOS)
+* [MonkOS](https://github.com/beevik/MonkOS): the inspiration and basis of the docker build system

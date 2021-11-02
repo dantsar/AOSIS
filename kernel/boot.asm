@@ -1,4 +1,4 @@
-; this boot.asm was borrowed from https://wiki.osdev.org/Bare_Bones
+; this boot.asm was based on https://wiki.osdev.org/Bare_Bones
 
 ; Declare constants for the multiboot header.
 MBALIGN  equ  1 << 0            ; align loaded modules on page boundaries
@@ -14,12 +14,14 @@ align 4
 	dd FLAGS
 	dd CHECKSUM
  
+%include "init_gdt.inc"
+%include "init_idt.inc"
+
 section .bss
 align 16
 stack_bottom:
 resb 16384 ; 16 KiB
 stack_top:
- 
 ; The linker script specifies _start as the entry point to the kernel and the
 section .text
 global _start:function (_start.end - _start)
@@ -30,8 +32,10 @@ _start:
 	; To set up a stack, we set the esp register to point to the top of our
 	mov esp, stack_top
 
-	; set up global stuff here: load GDT, enable PAGING ETC
-	; call _init
+	; initialize all global constructs that are needed by the operaing system 
+	; first set up the GDT followed by the IDT
+	call __init_gdt__
+	call __init_idt__
  
 	; high level kernel ABI requires that the stack be 16 bit aligned
 	extern kernel_main

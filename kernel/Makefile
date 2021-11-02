@@ -3,16 +3,19 @@ include ../config.mk
 LINKER_LD 	:= linker.ld
 CFLAGS		:=$(CFLAGS) -O2 -ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc
 
+AOSIS_BIN_DEP 	:= 	kernel.o \
+				 	boot.o
+
 all: aosis.bin 
 
-boot.o: boot.asm
-	nasm -felf32 boot.asm -o boot.o
+%.o: %.asm
+	nasm -felf32 $< -o $@
 
 kernel.o: kernel.c
-	i686-elf-gcc -c kernel.c -o kernel.o $(CFLAGS) 
+	$(CC) -c kernel.c -o kernel.o $(CFLAGS) 
 
-aosis.bin: linker.ld kernel.o boot.o 
-	i686-elf-gcc -T $< -o $@ $(CFLAGS) boot.o kernel.o 
+aosis.bin: linker.ld $(AOSIS_BIN_DEP)
+	$(CC) -T $< -o $@ $(CFLAGS) $(AOSIS_BIN_DEP)
 
 .PHONY: clean
 clean: 
