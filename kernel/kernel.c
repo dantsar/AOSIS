@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "interrupt.h"
+
 // strings.h
 size_t strlen(const char *str)
 {
@@ -190,8 +192,9 @@ void terminal_printstr(const char *str)
 	}
 }
 
-void kernel_main() 
+void kmain() 
 {
+	init_interrupt();
 	initialize_terminal();
 
 	size_t i = 0;

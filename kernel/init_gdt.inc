@@ -14,9 +14,9 @@ __init_gdt__:
     mov cr0, eax
 
     ; clear instruction pipeline by performing a far jump
-    jmp CODE_SEG:clear_pipeline
+    jmp CODE_SEG:.clear_pipeline
 [BITS 32]
-clear_pipeline:
+.clear_pipeline:
     ret
 
 ; https://en.wikipedia.org/wiki/Global_Descriptor_Table

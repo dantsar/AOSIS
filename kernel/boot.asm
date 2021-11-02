@@ -35,11 +35,11 @@ _start:
 	; initialize all global constructs that are needed by the operaing system 
 	; first set up the GDT followed by the IDT
 	call __init_gdt__
-	call __init_idt__
+	; call __init_idt__
  
 	; high level kernel ABI requires that the stack be 16 bit aligned
-	extern kernel_main
-	call kernel_main
+	extern kmain
+	call kmain
 
 	; just do nothing if kernel_main unexpectadly returns 
 

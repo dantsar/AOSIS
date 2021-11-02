@@ -9,11 +9,3 @@ do
 done
 
 rm -rf build *.iso
-
-
-
-# set -e
-# . ./scripts/config.sh
-
-# pwd
-# realpath .
