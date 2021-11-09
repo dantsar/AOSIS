@@ -27,5 +27,5 @@ run:
 
 .PHONY: clean
 clean:
-	@rm -rf $(DIR_BUILD) 
+	@$(RM) $(DIR_BUILD) 
 	@make --directory=$(DIR_KERNEL) clean

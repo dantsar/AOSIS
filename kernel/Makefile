@@ -3,11 +3,15 @@ include ../config.mk
 LINKER_LD 	:= linker.ld
 CFLAGS		:=$(CFLAGS) -O2 -ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc
 
-AOSIS_BIN_DEP 	:= 	kernel.o 	\
-				 	boot.o		\
-					interrupt.o
+AOSIS_BIN_DEP 	:= 	kernel.o 		\
+				 	boot/boot.o 	\
+					terminal/tty.o 	\
+					terminal/vga.o	\
+					interrupt/interrupt.o	
+
 
 all: aosis.bin 
+
 
 %.o: %.asm
 	$(AS) -felf32 $< -o $@
@@ -20,4 +24,4 @@ aosis.bin: linker.ld $(AOSIS_BIN_DEP)
 
 .PHONY: clean
 clean: 
-	rm -rf *.o *.bin *.iso aosis
+	$(RM) $(AOSIS_BIN_DEP) *.o *.bin *.iso aosis

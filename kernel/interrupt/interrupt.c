@@ -11,11 +11,11 @@ int init_interrupt()
     // initialize IDT 
     for (size_t i = 0; i < 256; i++) {
         idt[i] = (struct idt_desc) {
-            .offset_1 = 0,
-            .selector = 0,
-            .zero = (uint8_t) 0,
-            .type_attr = (uint8_t) 0,
-            .offset_2 = (uint16_t) 0,
+            .offset_1   = (uint16_t) 0,
+            .selector   = (uint16_t) 0,
+            .zero       = (uint8_t) 0,
+            .type_attr  = (uint8_t) 0,
+            .offset_2   = (uint16_t) 0,
         };
     }
 
@@ -29,3 +29,5 @@ int init_interrupt()
 
     return 0;
 }
+
+

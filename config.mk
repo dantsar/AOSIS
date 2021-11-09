@@ -6,11 +6,11 @@ DIR_KERNEL		:= $(DIR_ROOT)/kernel
 DIR_BUILD		:= $(DIR_ROOT)/build
 DIR_SCRIPTS		:= $(DIR_ROOT)/scripts
 
-# CC				:= x86_64-elf-gcc
 CC				:= i686-elf-gcc
 
 AS 				:= nasm
 QEMU 			:= qemu-system-i386
+RM				:= rm -rf
 
 # --------------------- 
 # Makefile color macros

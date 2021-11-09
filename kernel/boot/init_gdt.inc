@@ -14,7 +14,7 @@ __init_gdt__:
     mov cr0, eax
 
     ; clear instruction pipeline by performing a far jump
-    jmp CODE_SEG:.clear_pipeline
+    jmp 0x08:.clear_pipeline
 [BITS 32]
 .clear_pipeline:
     ret
@@ -30,7 +30,7 @@ GDT_START:
         dw 0x0      ; base first 0-15 bits
         db 0x0      ; base 16-23 bits
         db 0b10011010 ; access byte
-        db 0b11001111 ; high 4 bits(flags) low 4 bites ()
+        db 0b11001111 ; high 4 bits(flags) low 4 bits ()
         db 0x0      ; base 24-32 bits
 
     ; data segment descriptor
@@ -39,7 +39,7 @@ GDT_START:
         dw 0x0      ; base first 0-15 bits
         db 0x0      ; base 16-23 bits
         db 0b10010010 ; access byte
-        db 0b11001111 ; high 4 bits(flags) low 4 bites
+        db 0b11001111 ; high 4 bits(flags) low 4 bits
         db 0x0      ; base 24-32 bits
 GDT_END:    ; used to calculate size of GDT
 

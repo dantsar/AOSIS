@@ -32,4 +32,5 @@ Here is a small list of resources that were used throughout the project:
 * [OSDev Wiki](https://wiki.osdev.org/Main_Page/) : this is an invaluable resource and the barebones and meaty skeleton examples were extremely helpful
 * [MonkOS](https://github.com/beevik/MonkOS): the inspiration and basis for the docker build system
 * [The World of Protected Mode](https://web.archive.org/web/20190424213806/http://www.osdever.net/tutorials/view/the-world-of-protected-mode) : referenced to load the GDT
+* [Bran's Kernel Implementation](http://www.osdever.net/bkerndev/Docs/intro.htm): an excelent resource that was reference for setting up the GDT and IDT 
 

@@ -14,8 +14,8 @@ align 4
 	dd FLAGS
 	dd CHECKSUM
  
-%include "init_gdt.inc"
-%include "init_idt.inc"
+%include "boot/init_gdt.inc"
+%include "boot/init_idt.inc"
 
 section .bss
 align 16
@@ -32,10 +32,9 @@ _start:
 	; To set up a stack, we set the esp register to point to the top of our
 	mov esp, stack_top
 
-	; initialize all global constructs that are needed by the operaing system 
-	; first set up the GDT followed by the IDT
+	; set up the GDT and initalize three entries 
+	; (NULL descriptor, data and code segment)
 	call __init_gdt__
-	; call __init_idt__
  
 	; high level kernel ABI requires that the stack be 16 bit aligned
 	extern kmain

@@ -7,6 +7,7 @@
 #define IRQ_KEYBOARD    1
 
 // https://wiki.osdev.org/Interrupt_Descriptor_Table
+// offset represents the bits of the address of the entry point of the ISR
 struct idt_desc {
     uint16_t offset_1;  // offset bits 0..15
     uint16_t selector;  // code segment selector in GDT or LDT
