@@ -25,6 +25,10 @@ iso:
 run: 
 	@$(DIR_SCRIPTS)/run.sh
 
+.PHONY: debug
+debug: 
+	@$(DIR_SCRIPTS)/debug.sh
+
 .PHONY: clean
 clean:
 	@$(RM) $(DIR_BUILD) 

@@ -3,10 +3,11 @@ include ../config.mk
 LINKER_LD 	:= linker.ld
 CFLAGS		:=$(CFLAGS) -O2 -ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc
 
-AOSIS_BIN_DEP 	:= 	kernel.o 		\
-				 	boot/boot.o 	\
-					terminal/tty.o 	\
-					terminal/vga.o	\
+AOSIS_BIN_DEP 	:= 	kernel.o 			\
+				 	boot/boot.o 		\
+					terminal/tty.o 		\
+					terminal/vga.o		\
+					interrupt/init_idt.o \
 					interrupt/interrupt.o	
 
 

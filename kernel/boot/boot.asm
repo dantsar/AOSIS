@@ -15,7 +15,7 @@ align 4
 	dd CHECKSUM
  
 %include "boot/init_gdt.inc"
-%include "boot/init_idt.inc"
+; %include "boot/init_idt.inc"
 
 section .bss
 align 16

@@ -1,12 +1,17 @@
-CODE_SEG equ GDT_code - GDT_START
-; DATA_SEG equ GDT_data - GDT_start
-
 ; Reference resource
 ; https://web.archive.org/web/20190424213806/http://www.osdever.net/tutorials/view/the-world-of-protected-mode
+global __init_gdt__
 __init_gdt__:
     cli
     lgdt [GDT_DESCRIPTOR] ; load the GDT
     
+    mov ax, 0x10      ; 0x10 is the offset in the GDT to our data segment
+    mov ds, ax        ; Load all data segment selectors
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
     ; change last bit of cr0 to one to actually 
     ; switch to the GDT, but can't change it directly
     mov eax, cr0

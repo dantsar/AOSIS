@@ -75,20 +75,21 @@ void *memset(void *s, int c, size_t n)
 	return sptr;
 }
 
-/* -------------------------------------------------------- */
-/* constants, variables, and functions for VGA */
-
-
 void kmain() 
 {
 	init_interrupt();
 	initialize_terminal();
 
-	// print the alphabet and then test scrolling in the terminal
-	size_t i = 0;
-	for (size_t y = 0; y < 25; y++) {
-		terminal_putchar('a' + ((i++) % 26));
-		terminal_putchar('\n');
-	}
-	terminal_printstr("LAST LINE");
+	tty_printstr("UGH\n");
+	init_timer(20);
+	
+	asm volatile ("int $0x0");
+	asm volatile ("int $0x1");
+	asm volatile ("int $0x2");
+	asm volatile ("int $0x0");
+	asm volatile ("int $0x1");
+	asm volatile ("int $0x2");
+
+	tty_printstr("UH OH\n");
+
 }
