@@ -27,6 +27,9 @@ make docker
 ```
 The docker image will be pulled, and the project will be built. 
 
+## Running AOSIS
+The system requirments to run the project is ```qemu-system-i386``` and can be run with ```make run```
+
 ## Resources
 Here is a small list of resources that were used throughout the project:
 * [OSDev Wiki](https://wiki.osdev.org/Main_Page/) : this is an invaluable resource and the barebones and meaty skeleton examples were extremely helpful
