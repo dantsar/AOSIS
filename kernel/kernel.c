@@ -2,10 +2,11 @@
 #include <stdint.h>
 
 #include "interrupt/interrupt.h"
+#include "interrupt/pic.h"
 #include "terminal/tty.h"
 #include "terminal/vga.h"
 
-// strings.h
+// strings.h: TO DO {Create static library}
 size_t strlen(const char *str)
 {
 	size_t len = 0;
@@ -75,21 +76,74 @@ void *memset(void *s, int c, size_t n)
 	return sptr;
 }
 
+
+// static inline int are_interrupts_enabled()
+// {
+//     unsigned long flags;
+//     asm volatile ( "pushf\n\t"
+//                    "pop %0"
+//                    : "=g"(flags) );
+//     return flags & (1 << 9);
+// }
+
 void kmain() 
 {
-	init_interrupt();
 	initialize_terminal();
+	init_interrupt();
+
+    // asm volatile("int $0x00");
+	// if (are_interrupts_enabled()) {
+	// 	tty_printstr("Interrupts are enabled\n");
+	// }
+	// for(;;);
 
 	tty_printstr("UGH\n");
-	init_timer(20);
+
+    // asm volatile("sti");
+	// asm volatile ("int $0x0");
+	// asm volatile ("int $0x1");
+	// asm volatile ("int $0x2");
+	// asm volatile ("int $0x3");
+	// asm volatile ("int $0x4");
+	// asm volatile ("int $0x5");
+	// asm volatile ("int $0x6");
+	// asm volatile ("int $0x7");
+	// asm volatile ("int $0x8"); // suss
+	// asm volatile ("int $0x9");
+	// // asm volatile ("int $0xa"); // suss
+	// // asm volatile ("int $0xb"); // suss
+	// // asm volatile ("int $0xc"); // suss
+	// // asm volatile ("int $0xd"); // suss
+	// // asm volatile ("int $0xe"); // suss
+	// asm volatile ("int $0xf");
+	// asm volatile ("int $0x10");
+	// // asm volatile ("int $0x11"); // not that suss
+	// asm volatile ("int $0x12");
+	// asm volatile ("int $0x13");
+	// asm volatile ("int $0x14");
+	// asm volatile ("int $0x15");
+	// asm volatile ("int $0x16");
+	// asm volatile ("int $0x17");
+	// asm volatile ("int $0x18");
+	// asm volatile ("int $0x19");
+	// asm volatile ("int $0x1a");
+	// asm volatile ("int $0x1b");
+	// asm volatile ("int $0x1c");
+	// asm volatile ("int $0x1d");
+	// // asm volatile ("int $0x1e"); // not that suss
+	// asm volatile ("int $0x1f");
 	
-	asm volatile ("int $0x0");
-	asm volatile ("int $0x1");
-	asm volatile ("int $0x2");
-	asm volatile ("int $0x0");
-	asm volatile ("int $0x1");
-	asm volatile ("int $0x2");
+	init_timer(19);
+	asm volatile("sti");
 
-	tty_printstr("UH OH\n");
+	// tty_printstr("Test timer interrupt\n");
+	// for (int i = 0; i < 10; i++)
+	// 	asm volatile ("int $32");
 
+	// asm volatile ("int $32");
+
+
+	// tty_printstr("UH OH\n");
+
+	for(;;); // spin forever
 }
