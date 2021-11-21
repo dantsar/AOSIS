@@ -25,9 +25,13 @@ iso:
 run: 
 	@$(DIR_SCRIPTS)/run.sh
 
-.PHONY: debug
-debug: 
-	@$(DIR_SCRIPTS)/debug.sh
+.PHONY: o_debug
+o_debug: 
+	@$(DIR_SCRIPTS)/debug.sh qemu
+
+.PHONY: g_debug
+g_debug: 
+	@$(DIR_SCRIPTS)/debug.sh gdb 
 
 .PHONY: clean
 clean:

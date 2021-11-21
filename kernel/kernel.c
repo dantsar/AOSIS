@@ -3,6 +3,7 @@
 
 #include "interrupt/interrupt.h"
 #include "interrupt/pic.h"
+#include "interrupt/keyboard.h"
 #include "terminal/tty.h"
 #include "terminal/vga.h"
 
@@ -99,15 +100,15 @@ void kmain()
 
 	tty_printstr("UGH\n");
 
-    // asm volatile("sti");
+    asm volatile("sti");
 	// asm volatile ("int $0x0");
-	// asm volatile ("int $0x1");
-	// asm volatile ("int $0x2");
-	// asm volatile ("int $0x3");
-	// asm volatile ("int $0x4");
-	// asm volatile ("int $0x5");
-	// asm volatile ("int $0x6");
-	// asm volatile ("int $0x7");
+	// // asm volatile ("int $0x1");
+	// // asm volatile ("int $0x2");
+	// // asm volatile ("int $0x3");
+	// // asm volatile ("int $0x4");
+	// // asm volatile ("int $0x5");
+	// // asm volatile ("int $0x6");
+	// // asm volatile ("int $0x7");
 	// asm volatile ("int $0x8"); // suss
 	// asm volatile ("int $0x9");
 	// // asm volatile ("int $0xa"); // suss
@@ -130,11 +131,12 @@ void kmain()
 	// asm volatile ("int $0x1b");
 	// asm volatile ("int $0x1c");
 	// asm volatile ("int $0x1d");
-	// // asm volatile ("int $0x1e"); // not that suss
+	// asm volatile ("int $0x1e"); // not that suss
 	// asm volatile ("int $0x1f");
 	
-	init_timer(19);
-	asm volatile("sti");
+	// init_timer(19);
+	// init_keyboard();
+	// asm volatile("sti");
 
 	// tty_printstr("Test timer interrupt\n");
 	// for (int i = 0; i < 10; i++)

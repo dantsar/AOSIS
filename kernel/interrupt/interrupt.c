@@ -67,14 +67,13 @@ void irq_handler(struct registers regs)
     // tty_printstr("int no: ");
     // tty_printint(regs.int_no);
 
-    // Send an EOI (end of interrupt) signal to the PICs.
-    // If this interrupt involved the slave.
+    // If interrupt from slave PIC, send reset signal to slave
     if (regs.int_no >= 40)
     {
-        // Send reset signal to slave.
         outb(0xA0, 0x20);
     }
-    // Send reset signal to master. (As well as slave, if necessary).
+
+    // Send reset signal to master. 
     outb(0x20, 0x20);
 
     if (idt_handlers[regs.int_no] != NULL)
@@ -82,14 +81,16 @@ void irq_handler(struct registers regs)
         idt_handler handle = idt_handlers[regs.int_no];
         handle(regs);
     }
-    // tty_printstr("IRQ HANDLED\n");
 }
 
-
+void other_interrupt(struct registers regs) {
+    tty_printstr("???SOMEOTHER INTERRUPT???\n");
+    tty_printint(regs.int_no);
+}
 
 int init_interrupt() 
 {
-    // initialize IDT 
+    // initialize IDT and idt_handlers to NULL
     // memset later
     for (size_t i = 0; i < 256; i++) {
         idt[i] = (struct idt_desc) {
@@ -160,13 +161,34 @@ int init_interrupt()
         {29, (uint32_t)isr29, 0x08, 0x8E},
         {30, (uint32_t)isr30, 0x08, 0x8E},
         {31, (uint32_t)isr31, 0x08, 0x8E},
-        {32, (uint32_t)irq0, 0x08, 0x8E},
+        {32, (uint32_t)irq0,  0x08, 0x8E},
+        {33, (uint32_t)irq1,  0x08, 0x8E},
+        {32, (uint32_t)irq2,  0x08, 0x8E},
+        {33, (uint32_t)irq3,  0x08, 0x8E},
+        {34, (uint32_t)irq4,  0x08, 0x8E},
+        {35, (uint32_t)irq5,  0x08, 0x8E},
+        {36, (uint32_t)irq6,  0x08, 0x8E},
+        {37, (uint32_t)irq7,  0x08, 0x8E},
+        {38, (uint32_t)irq8,  0x08, 0x8E},
+        {39, (uint32_t)irq9,  0x08, 0x8E},
+        {40, (uint32_t)irq10, 0x08, 0x8E},
+        {41, (uint32_t)irq11, 0x08, 0x8E},
+        {42, (uint32_t)irq12, 0x08, 0x8E},
+        {43, (uint32_t)irq13, 0x08, 0x8E},
+        {44, (uint32_t)irq14, 0x08, 0x8E},
+        {45, (uint32_t)irq15, 0x08, 0x8E},
     };
-
-    for (int i = 0; i <= 32; i++) {
+    int last = 34;
+    for (int i = 0; i < last; i++) {
         idt_set_entry(idt_cfg[i].index, idt_cfg[i].handler,
                       idt_cfg[i].select, idt_cfg[i].flags);
     }
+
+    for (int i = last; i < 256; i++) {
+        idt_handlers[i] = (idt_handler) other_interrupt;
+        // idt_set_entry(i, (uint32_t)other_interrupt, 0x08, 0x8E);
+    }
+
 
     _load_idt();
 

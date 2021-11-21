@@ -1,15 +1,16 @@
 include ../config.mk
 
 LINKER_LD 	:= linker.ld
-CFLAGS		:=$(CFLAGS) -O2 -ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc
+CFLAGS		:=$(CFLAGS) -ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc -O0 -ggdb
 
 AOSIS_BIN_DEP 	:= 	kernel.o 			  	\
 				 	boot/boot.o 		  	\
 					terminal/tty.o 		  	\
 					terminal/vga.o		  	\
 					interrupt/init_idt.o 	\
-					interrupt/pic.o			\
-					interrupt/interrupt.o 
+					interrupt/interrupt.o 	\
+					interrupt/keyboard.o	\
+					interrupt/pic.o
 
 all: aosis.bin 
 
