@@ -1,4 +1,26 @@
+include ../config.mk
+
+LIBK_BIN_DEP 		:= 	stdio/printf.o		\
+						stdio/putchar.o 	\
+						stdio/puts.o		\
+						string/memcmp.o 	\
+						string/memcpy.o 	\
+						string/memset.o 	\
+						string/memmove.o	\
+						string/memset.o		\
+						string/strlen.o		\
+						string/strnlen.o
+
+# ---------------------------------------------- #
+
 all: stuff
 
-stuff:
-	@echo "STUFF BEING MADE HERE"
+%.o: %.c
+	$(CC) -Iinclude -c $< -o $@
+
+stuff: $(LIBK_BIN_DEP)
+	@echo "STUFF"
+
+clean:
+	@$(RM) $(LIBK_BIN_DEP)
+

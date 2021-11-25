@@ -5,9 +5,11 @@ DIR_DOCKER		:= $(DIR_ROOT)/docker
 DIR_KERNEL		:= $(DIR_ROOT)/kernel
 DIR_BUILD		:= $(DIR_ROOT)/build
 DIR_SCRIPTS		:= $(DIR_ROOT)/scripts
+DIR_LIBC		:= $(DIR_ROOT)/libc
 
 CC				:= i686-elf-gcc
 
+AR 				:= ar
 AS 				:= nasm
 QEMU 			:= qemu-system-i386
 RM				:= rm -rf
