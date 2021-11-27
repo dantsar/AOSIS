@@ -1,5 +1,7 @@
 include ../config.mk
 
+CFLAGS 		:= -lgcc -ggdb
+
 LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 						stdio/putchar.o 	\
 						stdio/puts.o		\
@@ -16,7 +18,7 @@ LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 all: libk.a
 
 %.o: %.c
-	$(CC) -I../include/libc -c $< -o $@
+	$(CC)  -I../include/libc -c $< -o $@
 
 libk.a: $(LIBK_BIN_DEP)
 	$(AR) $@ $^
@@ -25,4 +27,3 @@ libk.a: $(LIBK_BIN_DEP)
 
 clean:
 	@$(RM) $(LIBK_BIN_DEP) libk.a
-

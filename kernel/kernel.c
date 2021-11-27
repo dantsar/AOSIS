@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <libc/string.h>
+#include <string.h>
 
 #include <kernel/interrupt/interrupt.h>
 #include <kernel/interrupt/pic.h>

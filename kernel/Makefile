@@ -1,7 +1,8 @@
 include ../config.mk
 
-LINKER_LD 	:= linker.ld
-CFLAGS		:=$(CFLAGS) -I../include -L../build -ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc -O0 -ggdb
+LINKER_LD 	:= 	linker.ld
+CFLAGS		:=	$(CFLAGS) -I../include -I../include/libc -L../build \
+				-ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc -ggdb
 
 KBIN_DEP 	:= 	kernel.o 			  	\
 			 	boot/boot.o 		  	\
@@ -13,9 +14,13 @@ KBIN_DEP 	:= 	kernel.o 			  	\
 				interrupt/pic.o			\
 				libk.a
 
+AOSIS_BIN 		:= ../build/aosis.bin
+
 # ---------------------------------------------- #
 
-all: aosis.bin 
+.PHONY: clean
+
+all: $(AOSIS_BIN)
 
 %.o: %.asm
 	$(AS) -felf32 $< -o $@
@@ -23,10 +28,9 @@ all: aosis.bin
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS) 
 
-aosis.bin: linker.ld $(KBIN_DEP)
+$(AOSIS_BIN): linker.ld $(KBIN_DEP)
 	$(CC) -T $< -o $@ $(CFLAGS) $(KBIN_DEP)
 
-.PHONY: clean
 clean: 
 	@echo "Kernel Clean Up"
 	@$(RM) $(KBIN_DEP) *.o *.bin *.iso aosis
