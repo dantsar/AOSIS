@@ -4,8 +4,10 @@
 # start with simple shell scripts {Baby steps}
 # config.sh -> header.sh -> build.sh -> iso.sh
 
-DIR_KERNEL="./kernel"
-DIR_BUILD="./build"
+# DIR_KERNEL="./kernel"
+# DIR_BUILD="./build"
+set -e
+. ./scripts/config.sh
 
 # mkdir -p "./build"
 mkdir -p $DIR_BUILD/aosis/boot/grub && 

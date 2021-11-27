@@ -1,9 +1,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "keyboard.h"
-#include "interrupt.h"
-#include "../terminal/tty.h"
+#include <kernel/interrupt/keyboard.h>
+#include <kernel/interrupt/interrupt.h>
+#include <kernel/terminal/tty.h>
 
 unsigned char last_char = 0;
 

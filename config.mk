@@ -9,7 +9,7 @@ DIR_LIBC		:= $(DIR_ROOT)/libc
 
 CC				:= i686-elf-gcc
 
-AR 				:= ar
+AR 				:= ar -rc
 AS 				:= nasm
 QEMU 			:= qemu-system-i386
 RM				:= rm -rf

@@ -6,7 +6,10 @@
 set -e
 . ./scripts/config.sh
 
+mkdir -p $DIR_BUILD
+
 for PROJECTS in $SYSTEM_PROJECTS; 
 do 
-    (cd "$DIR_ROOT/$PROJECTS" && make)
+    # (cd "$DIR_ROOT/$PROJECTS" && make)
+    (make --directory=$PROJECTS)
 done

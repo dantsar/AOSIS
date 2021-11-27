@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "tty.h"
-#include "vga.h"
+#include <kernel/terminal/tty.h>
+#include <kernel/terminal/vga.h>
 
 static const size_t SCREEN_WIDTH = 80;
 static const size_t SCREEN_HEIGHT = 25;

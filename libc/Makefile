@@ -13,14 +13,16 @@ LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 
 # ---------------------------------------------- #
 
-all: stuff
+all: libk.a
 
 %.o: %.c
-	$(CC) -Iinclude -c $< -o $@
+	$(CC) -I../include/libc -c $< -o $@
 
-stuff: $(LIBK_BIN_DEP)
-	@echo "STUFF"
+libk.a: $(LIBK_BIN_DEP)
+	$(AR) $@ $^
+	@echo "LIBK SUCCESSFULLY CREATED"
+	@cp $@ ../kernel
 
 clean:
-	@$(RM) $(LIBK_BIN_DEP)
+	@$(RM) $(LIBK_BIN_DEP) libk.a
 

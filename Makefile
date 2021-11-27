@@ -32,5 +32,6 @@ g_debug:
 
 clean:
 	@$(RM) $(DIR_BUILD) 
-	@make --directory=$(DIR_KERNEL) clean
-	@make --directory=$(DIR_LIBC) clean
+	@$(DIR_SCRIPTS)/clean.sh
+# @make --directory=$(DIR_KERNEL) clean
+# @make --directory=$(DIR_LIBC) clean
