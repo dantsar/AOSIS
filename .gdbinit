@@ -6,10 +6,21 @@ show disassemble-next-line
 # layout 
 layout split
 
-# macros 
+## macros 
+# print top 8 words from the stack
 define xsp 
     x/8xw $sp 
 end 
+
+# print top n words from the stack
+define sp 
+    x/$arg0xw $sp
+end
+
+# reconnect to qemu
+define re
+    target remote localhost:1234
+end
 
 # remote debugging
 target remote localhost:1234
