@@ -12,7 +12,7 @@ KBIN_DEP 	:= 	kernel.o 			  	\
 				interrupt/interrupt.o 	\
 				interrupt/keyboard.o	\
 				interrupt/pic.o			\
-				libk.a
+				libk.a					\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 
@@ -23,7 +23,7 @@ AOSIS_BIN 		:= ../build/aosis.bin
 all: $(AOSIS_BIN)
 
 %.o: %.asm
-	$(AS) -felf32 $< -o $@
+	$(AS) -g -felf32 $< -o $@
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS) 

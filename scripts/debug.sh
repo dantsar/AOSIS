@@ -3,6 +3,8 @@
 set -e
 . ./scripts/config.sh
 
+# echo $DIR_ROOT
+
 if [[ $1 == 'qemu' ]]
 then 
     if [ -f "build/aosis.iso" ]; then
@@ -12,7 +14,7 @@ then
     fi
 elif [[ $1 == 'gdb' ]]
 then 
-    gdb -tui -q -ex "target remote localhost:1234" -ex "set disassembly-flavor intel" \
-    -ex "set disassemble-next-line on" -ex "show disassemble-next-line" \
-    -ex "dir kernel" -ex "break kmain" $DIR_BUILD/aosis.bin
+    gdb -tui -q -cd=$DIR_ROOT -iex "set auto-load safe-path $DIR_ROOT" \
+        -iex "set auto-load local-gdbinit on" $DIR_BUILD/aosis.bin
 fi
+# -tui

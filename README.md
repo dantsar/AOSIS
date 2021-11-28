@@ -22,7 +22,7 @@ To build the project without the use of docker, the following tools are required
 
 ## Building with docker
 To build the project and produce a .iso in `build`, simply run:
-```
+```bash
 make docker
 ```
 The docker image will be pulled, and the project will be built. 

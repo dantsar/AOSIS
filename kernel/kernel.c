@@ -25,15 +25,16 @@ void kmain()
 	tty_printint(strlen("Hello there"));
 
     asm volatile("sti");
-	// asm volatile ("int $0x0");
-	// // asm volatile ("int $0x1");
-	// // asm volatile ("int $0x2");
-	// // asm volatile ("int $0x3");
-	// // asm volatile ("int $0x4");
-	// // asm volatile ("int $0x5");
-	// // asm volatile ("int $0x6");
-	// // asm volatile ("int $0x7");
-	// asm volatile ("int $0x8"); // suss
+	asm volatile ("int $0x0");
+	// asm volatile ("int $0x1");
+	// asm volatile ("int $0x2");
+	// asm volatile ("int $0x3");
+	// asm volatile ("int $0x4");
+	// asm volatile ("int $0x5");
+	// asm volatile ("int $0x6");
+	// asm volatile ("int $0x7");
+	// asm volatile("push $0");
+	asm volatile ("int $0x8"); // suss
 	// asm volatile ("int $0x9");
 	// // asm volatile ("int $0xa"); // suss
 	// // asm volatile ("int $0xb"); // suss
