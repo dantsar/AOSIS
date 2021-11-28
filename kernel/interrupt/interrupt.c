@@ -48,9 +48,18 @@ int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags)
 
 void isr_handler(struct registers regs) 
 {
+    static unsigned prev_int = -1;
+    if (regs.int_no == prev_int) { 
+        tty_printstr("...");
+        for(;;);
+    } else {
+        prev_int = regs.int_no;
+    }
+
     tty_printstr("Received interrupt: ");
     tty_printint(regs.int_no);
     tty_putchar('\n');
+
 
     if (idt_handlers[regs.int_no] != NULL) {
         tty_printstr("HANLDING INTERRUPT");

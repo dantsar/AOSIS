@@ -9,10 +9,14 @@
 #include <kernel/terminal/tty.h>
 #include <kernel/terminal/vga.h>
 
+extern void div_zero(void);
+
 void kmain() 
 {
 	initialize_terminal();
 	init_interrupt();
+
+	div_zero();
 
     // asm volatile("int $0x00");
 	// if (are_interrupts_enabled()) {
@@ -20,9 +24,9 @@ void kmain()
 	// }
 	// for(;;);
 
-	tty_printstr("UGH\n");
-	tty_printstr("`Hello there': ");
-	tty_printint(strlen("Hello there"));
+	// tty_printstr("UGH\n");
+	// tty_printstr("`Hello there': ");
+	// tty_printint(strlen("Hello there"));
 
     asm volatile("sti");
 	asm volatile ("int $0x0");
