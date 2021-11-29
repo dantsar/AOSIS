@@ -31,6 +31,34 @@ uint16_t inw(uint16_t port)
    return ret;
 }
 
+const char *int_msgs[] = {
+    "Divide by Zero",
+    "Debug",
+    "Non-Maskable Interrupt",
+    "Breakpoint",
+    "Overflow",
+    "Bound Range Exceeded",
+    "Invalid Opcode",
+    "Device Not Available",
+    "Double Fault",
+    "CoProcessor Segment Overrun",
+    "Invalid TSS",
+    "Segment Not Present",
+    "Stack Segment Fault",
+    "General Protection Fault",
+    "Page Fault",
+    "Reserved",
+    "Floatint-Point Error",
+    "Alignment Check",
+    "Machine Check",
+    "SIMD Floating Pointe Exception",
+    "Virtualziation Exception",
+    "Control Protection Exception", // 21
+    "Reserved", "Reserved","Reserved","Reserved","Reserved","Reserved",
+    "Reserved","Reserved","Reserved","Reserved",
+    /* IRQs Afterwards */
+};
+
 
 int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags) 
 {
@@ -48,6 +76,7 @@ int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags)
 
 void isr_handler(struct registers regs) 
 {
+    // TO DO: check for certain interrupts
     static unsigned prev_int = -1;
     if (regs.int_no == prev_int) { 
         tty_printstr("...");
@@ -58,8 +87,9 @@ void isr_handler(struct registers regs)
 
     tty_printstr("Received interrupt: ");
     tty_printint(regs.int_no);
-    tty_putchar('\n');
-
+    tty_printstr(" (");
+    tty_printstr(int_msgs[regs.int_no]);
+    tty_printstr(")\n");
 
     if (idt_handlers[regs.int_no] != NULL) {
         tty_printstr("HANLDING INTERRUPT");

@@ -13,7 +13,8 @@ KBIN_DEP 	:= 	kernel.o 			  	\
 				interrupt/keyboard.o	\
 				interrupt/pic.o			\
 				libk.a					\
-				div_zero.o
+				div_zero.o				\
+				branch_nowhere.o		\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 
