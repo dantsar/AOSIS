@@ -6,6 +6,7 @@ show disassemble-next-line
 # layout 
 layout split
 
+# -------------------------------------------------------- #
 ## macros 
 # print top 8 words from the stack
 define xsp 
@@ -17,10 +18,17 @@ define sp
     x/$arg0xw $sp
 end
 
+# print eflags in binary
+define pe 
+    p/t $eflags
+end
+
 # reconnect to qemu
 define re
     target remote localhost:1234
 end
+
+# -------------------------------------------------------- #
 
 # remote debugging
 target remote localhost:1234
