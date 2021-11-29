@@ -9,28 +9,6 @@ struct idt_pointer idtp;
 
 extern void _load_idt();
 
-// Write a byte out to the specified port.
-void outb(uint16_t port, uint8_t val)
-{
-    asm volatile ("outb %1, %0" : : "dN" (port), "a" (val));
-}
-
-
-uint8_t inb(uint16_t port)
-{
-   uint8_t ret;
-   asm volatile("inb %1, %0" : "=a" (ret) : "dN" (port));
-   return ret;
-}
-
-
-uint16_t inw(uint16_t port)
-{
-   uint16_t ret;
-   asm volatile ("inw %1, %0" : "=a" (ret) : "dN" (port));
-   return ret;
-}
-
 const char *int_msgs[] = {
     "Divide by Zero",
     "Debug",
@@ -59,6 +37,25 @@ const char *int_msgs[] = {
     /* IRQs Afterwards */
 };
 
+// Write a byte out to the specified port.
+void outb(uint16_t port, uint8_t val)
+{
+    asm volatile ("outb %1, %0" : : "dN" (port), "a" (val));
+}
+
+uint8_t inb(uint16_t port)
+{
+   uint8_t ret;
+   asm volatile("inb %1, %0" : "=a" (ret) : "dN" (port));
+   return ret;
+}
+
+uint16_t inw(uint16_t port)
+{
+   uint16_t ret;
+   asm volatile ("inw %1, %0" : "=a" (ret) : "dN" (port));
+   return ret;
+}
 
 int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags) 
 {
@@ -72,7 +69,6 @@ int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags)
 
     return 0;
 }
-
 
 void isr_handler(struct registers regs) 
 {
@@ -99,12 +95,11 @@ void isr_handler(struct registers regs)
     }
 }
 
-
 void irq_handler(struct registers regs) 
 {
-    // tty_printstr("IRQ handler\n");
-    // tty_printstr("int no: ");
-    // tty_printint(regs.int_no);
+    tty_printstr("IRQ handler\n");
+    tty_printstr("int no: ");
+    tty_printint(regs.int_no);
 
     // If interrupt from slave PIC, send reset signal to slave
     if (regs.int_no >= 40)
@@ -227,7 +222,6 @@ int init_interrupt()
         idt_handlers[i] = (idt_handler) other_interrupt;
         // idt_set_entry(i, (uint32_t)other_interrupt, 0x08, 0x8E);
     }
-
 
     _load_idt();
 

@@ -47,7 +47,6 @@ typedef enum KEYCODE keycode_t;
 
 extern unsigned char last_char;
 
-
 void init_keyboard();
 
 #endif

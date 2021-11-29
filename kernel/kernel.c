@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -26,11 +27,10 @@ void kmain()
 	// }
 	// for(;;);
 
-    asm volatile("sti");
+	asm volatile("sti");
 	
-	init_timer(19);
+	init_timer(19, false);
 	// init_keyboard();
-	// asm volatile("sti");
 
 	for(;;); // spin forever
 }

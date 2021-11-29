@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -7,17 +8,22 @@
 
 extern idt_handler idt_handlers[256];
 
+static bool print = true;
+
 static uint32_t tick = 0;
 static void timer_callback() // struct registers regs
 {
    tick++;
-   tty_printstr("Tick: ");
-   tty_printint(tick);
-   tty_putchar('\n');
+   if (print) {
+      tty_printstr("Tick: ");
+      tty_printint(tick);
+      tty_putchar('\n');
+   }
 }
 
-void init_timer(uint32_t frequency)
+void init_timer(uint32_t frequency, bool print_tick)
 {
+   print = print_tick;
     // setup timer handler
     idt_handlers[32] = (idt_handler) &timer_callback;
     tty_printstr("Timer frequency: ");

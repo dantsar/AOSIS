@@ -25,7 +25,6 @@ extern struct idt_pointer idtp;
 
 struct registers
 {
-    // unsigned int gs, fs, es, ds;      /* pushed the segs last */
     uint32_t ds;                  // Data segment selector
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
     uint32_t int_no, err_code;    // Interrupt number and error code (if applicable)
@@ -35,13 +34,12 @@ struct registers
 // Write a byte out to the specified port.
 void outb(uint16_t port, uint8_t val);
 
+// read byte from port
 uint8_t inb(uint16_t port);
 
+// read word from port
 uint16_t inw(uint16_t port);
 
-//
-/* handlers here: need typedef that function taking registers and returning void */
-//
 typedef void (*idt_handler)(struct registers);
 idt_handler idt_handlers[256]; 
 
