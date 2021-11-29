@@ -97,9 +97,12 @@ void isr_handler(struct registers regs)
 
 void irq_handler(struct registers regs) 
 {
-    tty_printstr("IRQ handler\n");
-    tty_printstr("int no: ");
-    tty_printint(regs.int_no);
+    if (regs.int_no != 32) {
+        tty_printstr("IRQ handler\n");
+        tty_printstr("int no: ");
+        tty_printint(regs.int_no);
+        tty_putchar('\n');
+    }
 
     // If interrupt from slave PIC, send reset signal to slave
     if (regs.int_no >= 40)
@@ -197,35 +200,33 @@ int init_interrupt()
         {31, (uint32_t)isr31, 0x08, 0x8E},
         {32, (uint32_t)irq0,  0x08, 0x8E},
         {33, (uint32_t)irq1,  0x08, 0x8E},
-        {32, (uint32_t)irq2,  0x08, 0x8E},
-        {33, (uint32_t)irq3,  0x08, 0x8E},
-        {34, (uint32_t)irq4,  0x08, 0x8E},
-        {35, (uint32_t)irq5,  0x08, 0x8E},
-        {36, (uint32_t)irq6,  0x08, 0x8E},
-        {37, (uint32_t)irq7,  0x08, 0x8E},
-        {38, (uint32_t)irq8,  0x08, 0x8E},
-        {39, (uint32_t)irq9,  0x08, 0x8E},
-        {40, (uint32_t)irq10, 0x08, 0x8E},
-        {41, (uint32_t)irq11, 0x08, 0x8E},
-        {42, (uint32_t)irq12, 0x08, 0x8E},
-        {43, (uint32_t)irq13, 0x08, 0x8E},
-        {44, (uint32_t)irq14, 0x08, 0x8E},
-        {45, (uint32_t)irq15, 0x08, 0x8E},
+        {34, (uint32_t)irq2,  0x08, 0x8E},
+        {35, (uint32_t)irq0,  0x08, 0x8E},
+        {36, (uint32_t)irq4,  0x08, 0x8E},
+        {37, (uint32_t)irq5,  0x08, 0x8E},
+        {38, (uint32_t)irq6,  0x08, 0x8E},
+        {39, (uint32_t)irq7,  0x08, 0x8E},
+        {40, (uint32_t)irq8,  0x08, 0x8E},
+        {41, (uint32_t)irq9,  0x08, 0x8E},
+        {42, (uint32_t)irq10, 0x08, 0x8E},
+        {43, (uint32_t)irq11, 0x08, 0x8E},
+        {44, (uint32_t)irq12, 0x08, 0x8E},
+        {45, (uint32_t)irq13, 0x08, 0x8E},
+        {46, (uint32_t)irq14, 0x08, 0x8E},
+        {47, (uint32_t)irq15, 0x08, 0x8E},
     };
-    int last = 34;
-    for (int i = 0; i < last; i++) {
+    int last = 47;
+    for (int i = 0; i <= last; i++) {
         idt_set_entry(idt_cfg[i].index, idt_cfg[i].handler,
                       idt_cfg[i].select, idt_cfg[i].flags);
     }
 
     for (int i = last; i < 256; i++) {
         idt_handlers[i] = (idt_handler) other_interrupt;
-        // idt_set_entry(i, (uint32_t)other_interrupt, 0x08, 0x8E);
+        idt_set_entry(i, (uint32_t)other_interrupt, 0x08, 0x8E);
     }
 
     _load_idt();
 
-    // // enable interrupts
-    // asm volatile("sti");
     return 0;
 }

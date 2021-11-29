@@ -30,7 +30,7 @@ void kmain()
 	asm volatile("sti");
 	
 	init_timer(19, false);
-	// init_keyboard();
+	init_keyboard();
 
 	for(;;); // spin forever
 }
