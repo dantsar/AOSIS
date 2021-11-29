@@ -17,6 +17,11 @@ void initialize_terminal()
 {
 	tty_xpos = 0;
 	tty_ypos = 0;
+
+	tty_clear();
+}
+
+void tty_clear() {
 	tty_buffer = (uint16_t *) 0xB8000;
 	tty_color = vga_color_entry(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 

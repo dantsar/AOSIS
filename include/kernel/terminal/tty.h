@@ -3,6 +3,8 @@
 
 void initialize_terminal();
 
+void tty_clear();
+
 void tty_scroll();
 
 void tty_putentryat(char c, uint8_t color, size_t x, size_t y);

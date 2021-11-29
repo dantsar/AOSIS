@@ -24,9 +24,11 @@ iso:
 run: 
 	@$(DIR_SCRIPTS)/run.sh
 
+# lanuches qemu with remote gdb stub and waits
 o_debug: 
 	@$(DIR_SCRIPTS)/debug.sh qemu
 
+# launches and connects gdb to qemu stub
 g_debug: 
 	@$(DIR_SCRIPTS)/debug.sh gdb 
 
