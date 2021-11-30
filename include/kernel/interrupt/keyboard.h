@@ -45,7 +45,12 @@ enum KEYCODE {
 
 typedef enum KEYCODE keycode_t;
 
-extern unsigned char last_char;
+typedef struct keylayout {
+    enum KEYCODE unshift[128];
+    uint8_t shift[128];
+} keylayout_t;
+
+extern uint8_t last_char;
 
 void init_keyboard();
 

@@ -1,6 +1,6 @@
 include ../config.mk
 
-CFLAGS 		:= -lgcc -ggdb
+CFLAGS 		:= -lgcc -ggdb -std=gnu11 -ffreestanding -nostdlib -Wall -Wextra
 
 LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 						stdio/putchar.o 	\
