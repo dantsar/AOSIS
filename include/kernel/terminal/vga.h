@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* constants for Hardware defined text mode colors */ // vga.h 
+/* constants for Hardware defined text mode colors */
 enum vga_color {
 	VGA_COLOR_BLACK = 0,
 	VGA_COLOR_BLUE = 1,

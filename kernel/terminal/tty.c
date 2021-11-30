@@ -113,3 +113,25 @@ void tty_printint(uint32_t num)
 		tty_putchar('0' + s[i--]);
 	}
 }
+
+void tty_printhex(uint32_t num)
+{
+	tty_printstr("0x");
+	if (num == 0) {
+		tty_putchar('0');
+		return;
+	}
+
+	static const char hex[] = "0123456789abcdef";
+
+	int c;
+	for (size_t i = 0; i < 2*sizeof(num); i++) {
+		if (num == 0) {
+			return;
+		}
+		c = ((num & 0xF0000000) >> 28) & 0x0F; // done to avoid reversing string
+		tty_putchar(hex[c]);
+
+		num <<= 4;
+	}
+}
