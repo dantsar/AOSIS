@@ -48,38 +48,51 @@ uint8_t last_char = 0;
 
 static const keylayout_t ps2_layout = {
     .unshift    = {
-        INV, ESC, '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '=', BSP,
-        TAB, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', ENT,
-        CTL, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'','`', SHF,
-        '\\','z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', SHF, PRS, ALT, ' ', 
-        CAP, F_1, F_2, F_3, F_4, F_5, F_6, F_7, F_8, F_9, F10, NML, SCL, HME,
-        KUP, PUP, MIN, LFT, CNT, RGT, PLS, END, DWN, PGD, INS, 
-        
-        
-        //  F11, F12, 
+        INV, ESC, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', BSP,
+        TAB, 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', ENT, CTL, 
+        'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'','`', SHF, '\\','z',
+        'x', 'c', 'v', 'b', 'n', 'm', ',', '.', SHF, PRS, ALT, ' ', CAP, F_1, F_2,
+        F_3, F_4, F_5, F_6, F_7, F_8, F_9, F10, NML, SCL, HME, KUP, PUP, MIN, LFT,
+        CNT, RGT, PLS, END, DWN, PGD, INS, DEL, INV, INV, INV, F11, F12, INV, INV,
+        INV, INV, INV, INV, INV, SES, SES, INV, INV, INV, INV, INV, INV, INV, INV, 
+        INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, 
+        INV, INV, INV, INV, INV, INV, INV,
     },
-    // .shift      = {
-    //     INV
-    // },
+    .shift      = {
+        INV, ESC, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', BSP,
+        TAB, 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', ENT, CTL, 
+        'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"','~', SHF, '|', 'Z',
+        'X', 'C', 'V', 'B', 'N', 'M', '<', '>', SHF, PRS, ALT, ' ', CAP, F_1, F_2,
+        F_3, F_4, F_5, F_6, F_7, F_8, F_9, F10, NML, SCL, HME, KUP, PUP, MIN, LFT,
+        CNT, RGT, PLS, END, DWN, PGD, INS, DEL, INV, INV, INV, F11, F12, INV, INV,
+        INV, INV, INV, INV, INV, SES, SES, INV, INV, INV, INV, INV, INV, INV, INV, 
+        INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, INV, 
+        INV, INV, INV, INV, INV, INV, INV,
+    },
 };
 
 char decode_char(enum KEYCODE scancode)
 {
-    // char key = 'a';
-    tty_printstr("Scancode: ");
-    tty_printhex(scancode);
-    tty_putchar(' ');
+    // tty_printstr("Scancode: ");
+    // tty_printhex(scancode);
+    // tty_putchar(' ');
     char key = ps2_layout.unshift[scancode];
-    if (key >= 'a' && key <= 'z') {
-        
-        tty_printhex(key);
-        tty_putchar(' ');
-        tty_putchar(key);
-    }
+    // tty_printhex(scancode);
+    // tty_putchar(' ');
+    // tty_printhex(key);
+    // tty_putchar(' ');
+    tty_putchar(key);
+    // if ((key >= 'a' && key <= 'z') || (key <= '1' && key >= '9')) {
+    //     tty_printhex(scancode);
+    //     tty_putchar(' ');
+    //     tty_printhex(key);
+    //     tty_putchar(' ');
+    //     tty_putchar(key);
+    // }
 
-    tty_putchar('\n');
+    // tty_putchar('\n');
 
-    // return key;
+    return key;
 }
 
 static void key_press(registers_t reg) {
@@ -104,4 +117,6 @@ static void key_press(registers_t reg) {
 void init_keyboard() 
 {
     idt_handlers[33] = (idt_handler)&key_press;
+    // outb(0x64, 0xF0);
+    // outb(0x64, 1);
 }

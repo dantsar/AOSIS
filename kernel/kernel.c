@@ -21,12 +21,6 @@ void kmain()
 	// div_zero(); // should handle exception no. 0 and loop endlessly
 	// branch_nowhere(); // branches to an area with no valid code 
 
-    // asm volatile("int $0x00");
-	// if (are_interrupts_enabled()) {
-	// 	tty_printstr("Interrupts are enabled\n");
-	// }
-	// for(;;);
-
 	asm volatile("sti");
 	
 	init_timer(19, false);
