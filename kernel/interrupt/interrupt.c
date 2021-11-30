@@ -70,7 +70,7 @@ int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags)
     return 0;
 }
 
-void isr_handler(struct registers regs) 
+void isr_handler(registers_t regs) 
 {
     // TO DO: check for certain interrupts
     static unsigned prev_int = -1;
@@ -95,14 +95,14 @@ void isr_handler(struct registers regs)
     }
 }
 
-void irq_handler(struct registers regs) 
+void irq_handler(registers_t regs) 
 {
-    if (regs.int_no != 32) {
-        tty_printstr("IRQ handler\n");
-        tty_printstr("int no: ");
-        tty_printint(regs.int_no);
-        tty_putchar('\n');
-    }
+    // if (regs.int_no != 32) {
+    //     tty_printstr("IRQ handler\n");
+    //     tty_printstr("int no: ");
+    //     tty_printint(regs.int_no);
+    //     tty_putchar('\n');
+    // }
 
     // If interrupt from slave PIC, send reset signal to slave
     if (regs.int_no >= 40)
@@ -120,7 +120,7 @@ void irq_handler(struct registers regs)
     }
 }
 
-void other_interrupt(struct registers regs) {
+void other_interrupt(registers_t regs) {
     tty_printstr("???SOMEOTHER INTERRUPT???\n");
     tty_printint(regs.int_no);
 }
@@ -201,7 +201,7 @@ int init_interrupt()
         {32, (uint32_t)irq0,  0x08, 0x8E},
         {33, (uint32_t)irq1,  0x08, 0x8E},
         {34, (uint32_t)irq2,  0x08, 0x8E},
-        {35, (uint32_t)irq0,  0x08, 0x8E},
+        {35, (uint32_t)irq3,  0x08, 0x8E},
         {36, (uint32_t)irq4,  0x08, 0x8E},
         {37, (uint32_t)irq5,  0x08, 0x8E},
         {38, (uint32_t)irq6,  0x08, 0x8E},

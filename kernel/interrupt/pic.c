@@ -11,7 +11,7 @@ extern idt_handler idt_handlers[256];
 static bool print = true;
 
 static uint32_t tick = 0;
-static void timer_callback() // struct registers regs
+static void timer_callback() // registers_t regs
 {
    tick++;
    if (print) {

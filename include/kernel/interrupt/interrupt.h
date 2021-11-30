@@ -23,13 +23,13 @@ struct idt_pointer {
 extern struct idt_desc idt[];
 extern struct idt_pointer idtp;
 
-struct registers
+typedef struct registers
 {
     uint32_t ds;                  // Data segment selector
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
     uint32_t int_no, err_code;    // Interrupt number and error code (if applicable)
     uint32_t eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
-};
+} registers_t;
 
 // Write a byte out to the specified port.
 void outb(uint16_t port, uint8_t val);
@@ -40,7 +40,7 @@ uint8_t inb(uint16_t port);
 // read word from port
 uint16_t inw(uint16_t port);
 
-typedef void (*idt_handler)(struct registers);
+typedef void (*idt_handler)(registers_t);
 idt_handler idt_handlers[256]; 
 
 // sets the specified entry in the IDT
@@ -50,7 +50,7 @@ int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags);
 int init_interrupt();
 
 // generic handler
-void isr_handler(struct registers regs);
+void isr_handler(registers_t regs);
 
 
 extern void isr0();

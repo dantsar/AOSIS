@@ -27,6 +27,6 @@ enum vga_color {
 /* every vga color entry is two nibbles 0: foreground color, 1: background color */
 uint8_t vga_color_entry(enum vga_color fg, enum vga_color bg);
 
-uint16_t vga_entry(unsigned char uc, uint8_t color);
+uint16_t vga_entry(uint8_t uc, uint8_t color);
 
 #endif 
