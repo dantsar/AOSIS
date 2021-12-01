@@ -8,7 +8,7 @@ enum KEYCODE {
     KEY_ENTER     = 0x0d,
     KEY_ESCAPE    = 0x1b,
     KEY_CTRL      = 0x81,
-    KEY_SHIFT     = 0x82,
+    KEY_SHIFT     = 0x2a,
     KEY_ALT       = 0x83,
     KEY_PRTSCR    = 0x90,
     KEY_CAPSLOCK  = 0x91,
@@ -17,14 +17,14 @@ enum KEYCODE {
     KEY_INSERT    = 0xa0,
     KEY_END       = 0xa1,
     KEY_DOWN      = 0xa2,
-    KEY_PGDN      = 0xa3,
+    KEY_PGDWN     = 0xa3,
     KEY_LEFT      = 0xa4,
     KEY_CENTER    = 0xa5,        ///< Keypad Center
     KEY_RIGHT     = 0xa6,
     KEY_HOME      = 0xa7,
     KEY_UP        = 0xa8,
     KEY_PGUP      = 0xa9,
-    KEY_DEL       = 0xaa,
+    KEY_DELETE    = 0xaa,
     KEY_MINUS     = 0xab,        ///< Keypad Minus
     KEY_PLUS      = 0xac,        ///< Keypad Plus
     KEY_F1        = 0xb0,
@@ -46,11 +46,11 @@ enum KEYCODE {
 typedef enum KEYCODE keycode_t;
 
 typedef struct keylayout {
-    enum KEYCODE unshift[128];
-    uint8_t shift[128];
+    keycode_t unshift[128];
+    keycode_t shift[128];
 } keylayout_t;
 
-extern uint8_t last_char;
+char line_buff[25]; // buffer for a whole line
 
 void init_keyboard();
 
