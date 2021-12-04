@@ -4,6 +4,7 @@
         "tty.h": "c",
         "interrupt.h": "c",
         "string.h": "c",
-        "pic.h": "c"
+        "pic.h": "c",
+        "ringbuff.h": "c"
     },
 }

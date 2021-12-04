@@ -11,8 +11,6 @@ static size_t tty_xpos;
 static uint8_t tty_color;
 static uint16_t *tty_buffer;
 
-/* -------------------------------------------------------- */
-
 void initialize_terminal()
 {
 	tty_xpos = 0;
@@ -64,6 +62,11 @@ void tty_putchar(char c)
 		tty_xpos = 0;
 		if (++tty_ypos == SCREEN_HEIGHT) {
 			tty_scroll();
+		}
+		return;
+	} else if (c == '\t'){
+		for (int i = 0; i < 8; i++) {
+			tty_putchar(' ');
 		}
 		return;
 	}

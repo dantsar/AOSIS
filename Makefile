@@ -25,11 +25,11 @@ run:
 	@$(DIR_SCRIPTS)/run.sh
 
 # lanuches qemu with remote gdb stub and waits
-o_debug: 
+qdb:
 	@$(DIR_SCRIPTS)/debug.sh qemu
 
 # launches and connects gdb to qemu stub
-g_debug: 
+gdb:
 	@$(DIR_SCRIPTS)/debug.sh gdb 
 
 clean:
