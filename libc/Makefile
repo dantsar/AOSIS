@@ -14,11 +14,17 @@ LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 						string/strnlen.o	\
 						ctype/isalnum.o		\
 						ctype/isalpha.o		\
-						ctype/isprint.o		\
+						ctype/isascii.o		\
+						ctype/isblank.o		\
+						ctype/iscntrl.o		\
+						ctype/isgraph.o		\
 						ctype/isdigit.o		\
 						ctype/islower.o		\
 						ctype/isprint.o		\
+						ctype/ispunct.o		\
+						ctype/isspace.o		\
 						ctype/isupper.o		\
+						ctype/isxdigit.o	\
 
 # ---------------------------------------------- #
 
