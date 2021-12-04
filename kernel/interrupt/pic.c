@@ -2,9 +2,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <kernel/interrupt/pic.h>
-#include <kernel/interrupt/interrupt.h>
-#include <kernel/terminal/tty.h>
+#include <interrupt/pic.h>
+#include <interrupt/interrupt.h>
+#include <terminal/tty.h>
 
 extern idt_handler idt_handlers[256];
 

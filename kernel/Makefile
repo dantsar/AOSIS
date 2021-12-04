@@ -1,7 +1,7 @@
 include ../config.mk
 
 LINKER_LD 	:= 	linker.ld
-CFLAGS		:=	$(CFLAGS) -I../include -I../include/libc -L../build \
+CFLAGS		:=	$(CFLAGS) -I../include/kernel -I../include/libc -L../build \
 				-ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -lgcc -ggdb
 
 KBIN_DEP 	:= 	kernel.o 			  	\

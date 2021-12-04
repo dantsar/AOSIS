@@ -1,6 +1,6 @@
 #include <stdbool.h>
 
-#include <kernel/common/ringbuff.h>
+#include <common/ringbuff.h>
 
 // read mulitple bytes from the ring buffer
 void ring_read(ringbuff_t *rbuff, char *buff, size_t len)

@@ -1,7 +1,7 @@
 #ifndef _KEYBOARD_LUT_H
 #define _KEYBOARD_LUT_H
 
-#include <kernel/interrupt/keyboard.h>
+#include <interrupt/keyboard.h>
 
 // the lookup table for the shifted and unshifted characters 
 // given scancodes from set 1

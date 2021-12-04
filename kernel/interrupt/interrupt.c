@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include <kernel/interrupt/interrupt.h>
-#include <kernel/terminal/tty.h>
+#include <interrupt/interrupt.h>
+#include <terminal/tty.h>
 
 struct idt_desc idt[256] = {0};
 struct idt_pointer idtp;

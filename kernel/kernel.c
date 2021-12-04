@@ -4,11 +4,11 @@
 
 #include <string.h>
 
-#include <kernel/interrupt/interrupt.h>
-#include <kernel/interrupt/pic.h>
-#include <kernel/interrupt/keyboard.h>
-#include <kernel/terminal/tty.h>
-#include <kernel/terminal/vga.h>
+#include <interrupt/interrupt.h>
+#include <interrupt/pic.h>
+#include <interrupt/keyboard.h>
+#include <terminal/tty.h>
+#include <terminal/vga.h>
 
 extern void div_zero(void);
 extern void branch_nowhere(void);

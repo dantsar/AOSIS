@@ -1,11 +1,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <kernel/interrupt/interrupt.h>
-#include <kernel/interrupt/keyboard.h>
-#include <kernel/interrupt/keyboard_lut.h>
-#include <kernel/common/ringbuff.h>
-#include <kernel/terminal/tty.h>
+#include <interrupt/interrupt.h>
+#include <interrupt/keyboard.h>
+#include <interrupt/keyboard_lut.h>
+#include <common/ringbuff.h>
+#include <terminal/tty.h>
 
 static char kb_buff[2048];
 static ringbuff_t kb_rbuff = {
