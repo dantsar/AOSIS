@@ -1,8 +1,7 @@
 #include <ctype.h>
 
-int isprint(int c)
-{
-    if (c >= 32 || c <= 126) {
+int isascii(int c) {
+    if (c <= 127) {
         return 0;
     }
     return 1;
