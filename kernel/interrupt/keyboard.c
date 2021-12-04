@@ -31,7 +31,7 @@ struct keyboard_status {
 char decode_char(keycode_t scancode)
 {
     const keycode_t *lookup_table;
-    if (kb_state.shift == 1) {
+    if (kb_state.shift == 1 || kb_state.caps == 1) {
         lookup_table = ps2_layout.shift;
     } else {
         lookup_table = ps2_layout.unshift;
@@ -41,6 +41,9 @@ char decode_char(keycode_t scancode)
     if (key == KEY_SHIFT) {
         kb_state.shift = 1;
         return KEY_SHIFT;
+    } else if (key == KEY_CAPSLOCK) {
+        kb_state.caps = !kb_state.caps;
+        return KEY_CAPSLOCK;
     }
 
     tty_putchar(key);
