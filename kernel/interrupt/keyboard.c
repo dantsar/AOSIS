@@ -1,13 +1,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <ctype.h>
+
 #include <interrupt/interrupt.h>
 #include <interrupt/keyboard.h>
 #include <interrupt/keyboard_lut.h>
 #include <common/ringbuff.h>
 #include <terminal/tty.h>
 
-static char kb_buff[2048];
+static char kb_buff[2048] = {0};
 static ringbuff_t kb_rbuff = {
     .buff = kb_buff,
     .size = sizeof(kb_buff),
@@ -16,7 +18,8 @@ static ringbuff_t kb_rbuff = {
     .len  = 0,
 };
 
-struct keyboard_status {
+// the status of the keyboard, initialize everything to off
+struct {
     unsigned shift   : 1;
     unsigned alt     : 1;
     unsigned ctrl    : 1;
@@ -28,7 +31,7 @@ struct keyboard_status {
     .caps  = 0,
 };
 
-char decode_char(keycode_t scancode)
+static keycode_t decode_scancode(keycode_t scancode)
 {
     const keycode_t *lookup_table;
     if (kb_state.shift == 1 || kb_state.caps == 1) {
@@ -38,42 +41,52 @@ char decode_char(keycode_t scancode)
     }
 
     keycode_t key = lookup_table[scancode];
-    if (key == KEY_SHIFT) {
-        kb_state.shift = 1;
-        return KEY_SHIFT;
-    } else if (key == KEY_CAPSLOCK) {
-        kb_state.caps = !kb_state.caps;
-        return KEY_CAPSLOCK;
-    }
-
-    tty_putchar(key);
     return key;
 }
 
-static void key_press() {
+static void isr_key_press() {
     outb(0x20, 0x20);   // Send EOI
 
-    // tty_printstr("Key pressed\n");
-    // tty_printstr("KB INT NO: ");
-    // tty_printint(reg.int_no);
-    // tty_putchar('\n');
+    uint8_t scancode = inb(0x60); // get the scancode from the keyboard
 
-    uint8_t scancode = inb(0x60);
-    if (scancode & 0x80) {
-        if (ps2_layout.unshift[scancode] == KEY_SHIFT) {
+    // 0xe0 indicates that the scancode for the key is the next byte
+    if (scancode == 0xe0) {
+        return;
+    }
+
+    keycode_t key = decode_scancode(scancode);
+
+    // add shortcut to clear the screen
+    if ((key == 'c' || key == 'C') && kb_state.ctrl == 1) {
+        tty_clear();
+        return;
+    }
+
+    switch (key) {
+        case KEY_SHIFT:
+            kb_state.shift = 1;
+            break;
+        case KEY_SHIFT_RELEASE:
             kb_state.shift = 0;
-        }
-        // tty_printstr("RELEASED\n");
-    } else {
-        uint8_t key = decode_char(scancode);
-
-        // tty_putchar(key);
-        // tty_putchar('\n');
-        // tty_printstr("PRESSED\n");
+            break;
+        case KEY_CAPSLOCK:
+            kb_state.caps = !kb_state.caps;
+            break;
+        case KEY_CTRL:
+            kb_state.ctrl = 1;
+            break;
+        case KEY_CTRL_RELEASE:
+            kb_state.ctrl = 0;
+            break;
+        default:
+            if (!isprint(key)) {
+                tty_putchar(key);
+            }
+            break;
     }
 }
 
 void init_keyboard() 
 {
-    idt_handlers[33] = (idt_handler)&key_press;
+    idt_handlers[33] = (idt_handler)&isr_key_press;
 }
