@@ -29,6 +29,8 @@ void tty_clear() {
 			tty_buffer[index] = vga_entry(' ', tty_color);
 		}
 	}
+	tty_xpos = 0;
+	tty_ypos = 0;
 }
 
 void tty_scroll()
