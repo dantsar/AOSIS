@@ -135,6 +135,14 @@ static const keylayout_t ps2_layout = {
         [0x7c] = KEY_IGNORE, 
         [0x7d] = KEY_IGNORE, 
         [0x7e] = KEY_IGNORE,
+        [0x9D] = KEY_CTRL_RELEASE,
+        [0xaa] = KEY_SHIFT_RELEASE,
+        [0xb6] = KEY_SHIFT_RELEASE,
+        [0xb8] = KEY_ALT_RELEASE,
+
+        // 0xB8	left alt released
+        // 0xB6	right shift released
+        // 0xAA	left shift released
     },   
     .shift      = {
         [0x0] = KEY_IGNORE,
@@ -190,7 +198,7 @@ static const keylayout_t ps2_layout = {
         [0x32] = 'M', 
         [0x33] = '<', 
         [0x34] = '>', 
-        [0x35] = '/', 
+        [0x35] = '?', 
         [0x36] = KEY_SHIFT, 
         [0x37] = '*', 
         [0x38] = KEY_ALT, 
@@ -264,6 +272,10 @@ static const keylayout_t ps2_layout = {
         [0x7c] = KEY_IGNORE, 
         [0x7d] = KEY_IGNORE, 
         [0x7e] = KEY_IGNORE,
+        [0x9D] = KEY_CTRL_RELEASE,
+        [0xaa] = KEY_SHIFT_RELEASE,
+        [0xb6] = KEY_SHIFT_RELEASE,
+        [0xb8] = KEY_ALT_RELEASE,
     },
 };
 
