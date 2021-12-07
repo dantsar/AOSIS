@@ -78,8 +78,15 @@ static void isr_key_press() {
         case KEY_CTRL_RELEASE:
             kb_state.ctrl = 0;
             break;
+        case KEY_ALT:
+            kb_state.alt = 1;
+            break;
+        case KEY_ALT_RELEASE:
+            kb_state.alt = 0;
+            break;
         default:
             if (!isprint(key)) {
+                // add key to ringbuff
                 tty_putchar(key);
             }
             break;

@@ -139,10 +139,6 @@ static const keylayout_t ps2_layout = {
         [0xaa] = KEY_SHIFT_RELEASE,
         [0xb6] = KEY_SHIFT_RELEASE,
         [0xb8] = KEY_ALT_RELEASE,
-
-        // 0xB8	left alt released
-        // 0xB6	right shift released
-        // 0xAA	left shift released
     },   
     .shift      = {
         [0x0] = KEY_IGNORE,
@@ -278,6 +274,5 @@ static const keylayout_t ps2_layout = {
         [0xb8] = KEY_ALT_RELEASE,
     },
 };
-
 
 #endif
