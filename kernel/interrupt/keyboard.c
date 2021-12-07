@@ -1,7 +1,7 @@
+#include <ctype.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include <ctype.h>
+#include <string.h>
 
 #include <interrupt/interrupt.h>
 #include <interrupt/keyboard.h>
@@ -9,14 +9,24 @@
 #include <common/ringbuff.h>
 #include <terminal/tty.h>
 
-static char kb_buff[2048] = {0};
-static ringbuff_t kb_rbuff = {
-    .buff = kb_buff,
-    .size = sizeof(kb_buff),
-    .head = 0,
-    .tail = 0,
-    .len  = 0,
-};
+static uint8_t kb_buff[2048] = {0};
+static size_t num_keys = 0;
+
+static void add_key(keycode_t key)
+{
+    if (key == KEY_BACKSPACE) {
+        if (num_keys) num_keys--;
+
+        kb_buff[num_keys] = ' ';
+        tty_deleteprev();
+    } else if (key == KEY_ENTER) {
+        tty_putchar('\n');
+        memset(kb_buff, '\n', sizeof(kb_buff));
+    } else if (!isprint(key) || !isspace(key)) {
+        kb_buff[num_keys++] = key;
+        tty_putchar(key);
+    }
+}
 
 // the status of the keyboard, initialize everything to off
 struct {
@@ -57,7 +67,7 @@ static void isr_key_press() {
     keycode_t key = decode_scancode(scancode);
 
     // add shortcut to clear the screen
-    if ((key == 'c' || key == 'C') && kb_state.ctrl == 1) {
+    if ((key == 'l') && kb_state.ctrl == 1) {
         tty_clear();
         return;
     }
@@ -84,11 +94,11 @@ static void isr_key_press() {
         case KEY_ALT_RELEASE:
             kb_state.alt = 0;
             break;
+        case KEY_DELETE:
+
+            break;
         default:
-            if (!isprint(key)) {
-                // add key to ringbuff
-                tty_putchar(key);
-            }
+            add_key(key);
             break;
     }
 }

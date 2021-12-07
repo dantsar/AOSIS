@@ -13,6 +13,10 @@ void tty_putentryat(char c, uint8_t color, size_t x, size_t y);
 
 void tty_putchar(char c);
 
+void tty_deleteprev();
+
+void tty_write(const char *str, size_t len);
+
 void tty_printstr(const char *str);
 
 void tty_printhex(uint32_t num);

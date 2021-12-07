@@ -87,9 +87,11 @@ void tty_putchar(char c)
 		if (++tty_ypos == SCREEN_HEIGHT) {
 			tty_scroll();
 		}
+		update_cursor(tty_xpos, tty_ypos);
 		return;
 	} else if (c == '\t'){
-		for (int i = 0; i < 8; i++) {
+		unsigned xpos = tty_xpos;
+		for (unsigned i = 0; i < 8 - (xpos % 8); i++) {
 			tty_putchar(' ');
 		}
 		return;
@@ -102,6 +104,21 @@ void tty_putchar(char c)
 			tty_scroll();
 		}
 	}
+	update_cursor(tty_xpos, tty_ypos);
+}
+
+void tty_deleteprev()
+{
+	if (tty_xpos == 0) {
+		if (tty_ypos == 0) { 
+			return;
+		}
+		tty_xpos = SCREEN_WIDTH-1;
+		tty_ypos--;
+	} else {
+		tty_xpos--;
+	}
+	tty_putentryat(' ', tty_color, tty_xpos, tty_ypos);
 	update_cursor(tty_xpos, tty_ypos);
 }
 
