@@ -16,6 +16,7 @@ KBIN_DEP 	:= 	kernel.o 			  	\
 				div_zero.o				\
 				branch_nowhere.o		\
 				common/ringbuff.o		\
+				common/ports.o			\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 

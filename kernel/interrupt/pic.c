@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <common/ports.h>
 #include <interrupt/pic.h>
 #include <interrupt/interrupt.h>
 #include <terminal/tty.h>
