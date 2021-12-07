@@ -14,9 +14,6 @@ static uint16_t *tty_buffer;
 
 void initialize_terminal()
 {
-	tty_xpos = 0;
-	tty_ypos = 0;
-
 	tty_clear();
 
 	// init vga cursor
@@ -26,11 +23,16 @@ void initialize_terminal()
 	outb(0x3D4, 0x0B);
 	outb(0x3D5, (inb(0x3D5) & 0xE0) | (uint8_t)15);
 
+	tty_xpos = 0;
+	tty_ypos = 0;
 	update_cursor(0, 0);
 }
 
 void update_cursor(int x, int y)
 {
+	tty_xpos = x;
+	tty_ypos = y;
+
 	uint16_t pos = y * SCREEN_WIDTH + x;
 
 	outb(0x3D4, 0x0F);
@@ -51,6 +53,7 @@ void tty_clear() {
 	}
 	tty_xpos = 0;
 	tty_ypos = 0;
+	update_cursor(0,0);
 }
 
 void tty_scroll()
@@ -69,7 +72,6 @@ void tty_scroll()
 		tty_buffer[index] = ' ';
 	}
 	tty_ypos--;
-
 }
 
 void tty_putentryat(char c, uint8_t color, size_t x, size_t y)
