@@ -6,7 +6,7 @@ enum KEYCODE {
     // first five are the ascii equivelent
     KEY_BACKSPACE           = 0x08,
     KEY_TAB                 = 0x09,
-    KEY_ENTER               = 0x0d,
+    KEY_ENTER               = '\n',
     KEY_ESCAPE              = 0x1b,
     KEY_DELETE              = 0x7f,
     // not ascii
