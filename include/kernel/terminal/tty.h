@@ -3,6 +3,8 @@
 
 void initialize_terminal();
 
+void update_cursor(int x, int y);
+
 void tty_clear();
 
 void tty_scroll();

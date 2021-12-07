@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <common/ports.h>
 #include <terminal/tty.h>
 #include <terminal/vga.h>
 
@@ -17,6 +18,25 @@ void initialize_terminal()
 	tty_ypos = 0;
 
 	tty_clear();
+
+	// init vga cursor
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, (inb(0x3D5) & 0xC0) | (uint8_t) 0);
+ 
+	outb(0x3D4, 0x0B);
+	outb(0x3D5, (inb(0x3D5) & 0xE0) | (uint8_t)15);
+
+	update_cursor(0, 0);
+}
+
+void update_cursor(int x, int y)
+{
+	uint16_t pos = y * SCREEN_WIDTH + x;
+
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (pos & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
 }
 
 void tty_clear() {
@@ -78,9 +98,9 @@ void tty_putchar(char c)
 		tty_xpos = 0;
 		if (++tty_ypos == SCREEN_HEIGHT) { 
 			tty_scroll();
-			// tty_ypos = 0;
 		}
 	}
+	update_cursor(tty_xpos, tty_ypos);
 }
 
 void tty_write(const char *str, size_t len)
