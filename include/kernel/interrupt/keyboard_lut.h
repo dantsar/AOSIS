@@ -4,7 +4,6 @@
 #include <interrupt/keyboard.h>
 
 // the lookup table for the shifted and unshifted characters 
-// given scancodes from set 1
 
 static const keylayout_t ps2_layout = {
     .unshift    = {

@@ -7,16 +7,19 @@ CFLAGS		:=	$(CFLAGS) -I../include/kernel -I../include/libc -L../build \
 KBIN_DEP 	:= 	kernel.o 			  	\
 			 	boot/boot.o 		  	\
 				terminal/tty.o 		  	\
+				terminal/shell.o		\
 				terminal/vga.o		  	\
 				interrupt/init_idt.o 	\
 				interrupt/interrupt.o 	\
 				interrupt/keyboard.o	\
 				interrupt/pic.o			\
-				libk.a					\
 				div_zero.o				\
 				branch_nowhere.o		\
 				common/ringbuff.o		\
 				common/ports.o			\
+				common/cpu.o			\
+				libk.a					\
+
 
 AOSIS_BIN 		:= ../build/aosis.bin
 

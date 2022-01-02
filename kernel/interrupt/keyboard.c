@@ -1,7 +1,8 @@
-#include <ctype.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
+
+#include <ctype.h>
 
 #include <interrupt/interrupt.h>
 #include <interrupt/keyboard.h>
@@ -9,54 +10,68 @@
 #include <common/ringbuff.h>
 #include <terminal/tty.h>
 
-static uint8_t kb_buff[2048] = {0};
-static size_t num_keys = 0;
+keyboard_t keyboard = {
+    .len = 0,
+    .head = 0,
+    .tail = 0,
+};
+
+// global state of the keyboard
+kb_state_t kb_state = {
+    .shift   = 0,
+    .alt     = 0,
+    .ctrl    = 0,
+    .caps    = 0,
+    .numlock = 0,
+    .scrlock = 0,
+    .esc     = 0,
+};
+
+bool kb_get_key(key_t *key)
+{
+    if (keyboard.len == 0) {
+        return false;
+    }
+    
+    if (key) {
+        *key = keyboard.buff[keyboard.head];
+    }
+
+    keyboard.head = (keyboard.head + 1) % sizeof(keyboard.buff);
+    keyboard.len--;
+    return true;
+}
 
 static void add_key(keycode_t key)
 {
-    if (key == KEY_BACKSPACE) {
-        if (num_keys) num_keys--;
+    if (keyboard.len < sizeof(keyboard.buff)) {
+        key_t new = {
+            .key = key,
+            .state = kb_state,
+        };
 
-        kb_buff[num_keys] = ' ';
-        tty_deleteprev();
-    } else if (key == KEY_ENTER) {
-        tty_putchar('\n');
-        memset(kb_buff, '\n', sizeof(kb_buff));
-    } else if (!isprint(key) || !isspace(key)) {
-        kb_buff[num_keys++] = key;
-        tty_putchar(key);
+        keyboard.len++;
+        keyboard.buff[keyboard.tail] = new;
+        keyboard.tail = (keyboard.tail + 1) % sizeof(keyboard.buff);
     }
 }
-
-// the status of the keyboard, initialize everything to off
-struct {
-    unsigned shift   : 1;
-    unsigned alt     : 1;
-    unsigned ctrl    : 1;
-    unsigned caps    : 1;
-} kb_state = {
-    .shift = 0,
-    .alt   = 0,
-    .ctrl  = 0,
-    .caps  = 0,
-};
 
 static keycode_t decode_scancode(keycode_t scancode)
 {
     const keycode_t *lookup_table;
-    if (kb_state.shift == 1 || kb_state.caps == 1) {
-        lookup_table = ps2_layout.shift;
+    keycode_t key;
+
+    if (isalpha(ps2_layout.shift[scancode])) {
+        lookup_table = (kb_state.shift ^ kb_state.caps) ? ps2_layout.shift : ps2_layout.unshift;
     } else {
-        lookup_table = ps2_layout.unshift;
+        lookup_table = (kb_state.shift) ? ps2_layout.shift : ps2_layout.unshift;
     }
 
-    keycode_t key = lookup_table[scancode];
+    key = lookup_table[scancode];
     return key;
 }
 
 static void isr_key_press() {
-    outb(0x20, 0x20);   // Send EOI
-
     uint8_t scancode = inb(0x60); // get the scancode from the keyboard
 
     // 0xe0 indicates that the scancode for the key is the next byte
@@ -71,7 +86,7 @@ static void isr_key_press() {
         tty_clear();
         return;
     }
-
+    
     switch (key) {
         case KEY_SHIFT:
             kb_state.shift = 1;
@@ -95,12 +110,14 @@ static void isr_key_press() {
             kb_state.alt = 0;
             break;
         case KEY_DELETE:
-
+            // does nothing because arrow keys are currently not handled
             break;
         default:
             add_key(key);
             break;
     }
+
+    outb(0x20, 0x20);   // Send EOI
 }
 
 void init_keyboard() 

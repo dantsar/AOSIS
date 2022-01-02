@@ -208,5 +208,7 @@ int init_interrupt()
 
     _load_idt();
 
+	asm volatile("sti");
+
     return 0;
 }

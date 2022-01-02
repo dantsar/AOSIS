@@ -1,16 +1,17 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
+#include <stdbool.h>
+
 // keycode for PS/2 Keyboard
 enum KEYCODE {
-    // first five are the ascii equivelent
-    KEY_BACKSPACE           = 0x08,
-    KEY_TAB                 = 0x09,
+    KEY_BACKSPACE           = '\b',
+    KEY_TAB                 = '\t',
     KEY_ENTER               = '\n',
     KEY_ESCAPE              = 0x1b,
     KEY_DELETE              = 0x7f,
-    // not ascii
 
+    // not ascii
     KEY_SHIFT               = 0x80,
     KEY_SHIFT_RELEASE,
     KEY_CAPSLOCK,
@@ -44,19 +45,44 @@ enum KEYCODE {
     KEY_F10,
     KEY_F11,
     KEY_F12,
-    KEY_SCANESC             = 0xfe,
-    KEY_IGNORE              = 0xff,
+    KEY_SCANESC,
+    KEY_IGNORE,
 };
 
 typedef enum KEYCODE keycode_t;
 
+// used for the look up table
 typedef struct keylayout {
     keycode_t unshift[256];
     keycode_t shift[256];
 } keylayout_t;
 
-char line_buff[25]; // buffer for a whole line
+typedef struct keyboard_state {
+    unsigned shift   : 1;
+    unsigned alt     : 1;
+    unsigned ctrl    : 1;
+    unsigned caps    : 1;
+    unsigned numlock : 1;
+    unsigned scrlock : 1;
+    unsigned esc     : 1;
+} kb_state_t;
+
+typedef struct key {
+    kb_state_t state;
+    keycode_t key;
+} key_t;
+
+typedef struct keyboard {
+    key_t buff[4096];
+    size_t len;
+    size_t head, tail;
+} keyboard_t;
+
+// the global keyboard state
+extern keyboard_t keyboard;
 
 void init_keyboard();
+
+bool kb_get_key(key_t *key);
 
 #endif

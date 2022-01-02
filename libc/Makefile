@@ -5,6 +5,7 @@ CFLAGS 		:= -lgcc -ggdb -std=gnu11 -ffreestanding -nostdlib -Wall -Wextra
 LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 						stdio/putchar.o 	\
 						stdio/puts.o		\
+						string/strcmp.o		\
 						string/memcmp.o 	\
 						string/memcpy.o 	\
 						string/memset.o 	\

@@ -1,6 +1,9 @@
 #ifndef _TTY_H
 #define _TTY_H
 
+#include <stddef.h>
+#include <stdint.h>
+
 void initialize_terminal();
 
 void update_cursor(int x, int y);
