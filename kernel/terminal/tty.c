@@ -1,3 +1,5 @@
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -7,8 +9,8 @@
 
 static const size_t SCREEN_WIDTH = 80;
 static const size_t SCREEN_HEIGHT = 25;
-static size_t tty_ypos;
-static size_t tty_xpos;
+static size_t tty_ypos = 0;
+static size_t tty_xpos = 0;
 static uint8_t tty_color;
 static uint16_t *tty_buffer;
 
@@ -80,7 +82,7 @@ void tty_putentryat(char c, uint8_t color, size_t x, size_t y)
 	tty_buffer[index] = vga_entry(c, color);
 }
 
-void tty_putchar(char c)
+void tty_putc(char c)
 {
 	if (c == '\n') {
 		tty_xpos = 0;
@@ -92,7 +94,7 @@ void tty_putchar(char c)
 	} else if (c == '\t'){
 		unsigned xpos = tty_xpos;
 		for (unsigned i = 0; i < 8 - (xpos % 8); i++) {
-			tty_putchar(' ');
+			tty_putc(' ');
 		}
 		return;
 	}
@@ -125,7 +127,7 @@ void tty_deleteprev()
 void tty_write(const char *str, size_t len)
 {
 	for (size_t i = 0; i < len; i++) {
-		tty_putchar(str[i]);
+		tty_putc(str[i]);
 	}
 }
 
@@ -133,7 +135,7 @@ void tty_printstr(const char *str)
 { 
 	size_t index = 0;
 	while (str[index]) {
-		tty_putchar(str[index]);
+		tty_putc(str[index]);
 		index++;
 	}
 }
@@ -141,7 +143,7 @@ void tty_printstr(const char *str)
 void tty_printint(uint32_t num) 
 {
 	if (num == 0) { 
-		tty_putchar('0');
+		tty_putc('0');
 		return;
 	}
 	
@@ -154,15 +156,15 @@ void tty_printint(uint32_t num)
 	}
 	i--;
 	while (i >= 0) {
-		tty_putchar('0' + s[i--]);
+		tty_putc('0' + s[i--]);
 	}
 }
 
 void tty_printhex(uint32_t num)
 {
-	tty_printstr("0x");
+	// tty_printstr("0x");
 	if (num == 0) {
-		tty_putchar('0');
+		tty_putc('0');
 		return;
 	}
 
@@ -170,12 +172,59 @@ void tty_printhex(uint32_t num)
 
 	int c;
 	for (size_t i = 0; i < 2*sizeof(num); i++) {
-		if (num == 0) {
-			return;
-		}
+		// if (num == 0) {
+		// 	return;
+		// }
 		c = ((num & 0xF0000000) >> 28) & 0x0F; // done to avoid reversing string
-		tty_putchar(hex[c]);
+		tty_putc(hex[c]);
 
 		num <<= 4;
 	}
+}
+
+int kprintf(const char *format, ...)
+{
+	size_t printed = 0;
+
+	va_list args;
+	va_start(args, format);
+	
+	bool fmt_flag = false;
+
+	size_t i;
+	for (i = 0; format[i]; i++) {
+		if (fmt_flag) {
+			switch (format[i]) {
+				case '%':
+					tty_putc('%');
+					printed++;
+					break;
+				case 'd':
+				case 'u':
+				case 'i':
+					tty_printint(va_arg(args, uint32_t));
+					break;
+				case 'x':
+				case 'X':
+					tty_printhex(va_arg(args, uint32_t));
+					break;
+				case 's':
+					tty_printstr(va_arg(args, char *));
+					break;
+			}
+			fmt_flag = false;
+			continue;
+		}
+
+		if (format[i] == '%') {
+				fmt_flag = true;
+				continue;
+		}
+
+		tty_putc(format[i]);
+
+	}
+	va_end(args);
+
+	return printed + i;
 }

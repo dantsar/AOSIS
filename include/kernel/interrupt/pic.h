@@ -5,6 +5,6 @@
 #include <stdint.h>
 
 // initalize the PIT timer
-void init_timer(uint32_t frequency, bool print_tick);
+void timer_init(uint32_t frequency, bool print_tick);
 
 #endif

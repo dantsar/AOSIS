@@ -7,6 +7,8 @@ size_t strlen(const char *str);
 
 size_t strnlen(const char *str, size_t maxlen);
 
+char *strcat(char *dest, const char *src);
+
 int strcmp(const char *s1, const char *s2);
 
 int memcmp(const void *s1, const void *s2, size_t n);

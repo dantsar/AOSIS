@@ -16,6 +16,7 @@ static bool cmd_clear();
 static bool cmd_exit();
 static bool cmd_demo();
 static bool cmd_help();
+static bool cmd_amogus();
 
 bool (*run_cmd)() = NULL;
 static struct shell_command commands[] = {
@@ -23,16 +24,27 @@ static struct shell_command commands[] = {
     {.name = "clear",   .msg = "clears the screen",     .cmd=cmd_clear},
     {.name = "exit",    .msg = "exit the console",      .cmd=cmd_exit},
     {.name = "demo",    .msg = "run a demo",            .cmd=cmd_demo},
+    {.name = "amogus",  .msg = "amogus",                .cmd=cmd_amogus}
 };
+
+static char *amogus = \
+"   ###\n"
+"  ##**\n"
+"####***\n"
+"####***\n"
+"#######\n"
+"  #####\n"
+"  ## ##\n"
+"  ## ##\n";
 
 bool cmd_help()
 {
     for (size_t i = 0; i < sizeof(commands)/sizeof(struct shell_command); i++) {
-        tty_putchar('\t');
+        tty_putc('\t');
         tty_printstr(commands[i].name);
-        tty_printstr("  ");
+        tty_printstr("\t");
         tty_printstr(commands[i].msg);
-        tty_putchar('\n');
+        tty_putc('\n');
     }
     return true;
 }
@@ -45,7 +57,7 @@ static bool cmd_clear()
 
 bool cmd_exit()
 {
-    tty_printstr("\tdone!\n");
+    tty_printstr("    done!\n");
     for(;;);
     return true;
 }
@@ -56,8 +68,14 @@ bool cmd_demo()
     return true;
 }
 
+bool cmd_amogus()
+{
+    tty_printstr(amogus);
+    return true;
+}
+
 void command_start() {
-    tty_printstr("> ");
+    tty_printstr("$> ");
 }
 
 void command_run(char *cmd, size_t len) 
@@ -109,7 +127,7 @@ void kconsole()
             tty_deleteprev();
         } else if (k.key == KEY_ENTER) {
             // handle the command
-            tty_putchar('\n');
+            tty_putc('\n');
             command_run(cmd, cmd_len);
 
             memset(cmd, '\0', sizeof(cmd));
@@ -122,7 +140,7 @@ void kconsole()
             }
             cmd[cmd_len] = k.key;
             cmd_len++;
-            tty_putchar(k.key);
+            tty_putc(k.key);
         }
     }
 }

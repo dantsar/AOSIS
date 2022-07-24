@@ -81,7 +81,7 @@ typedef struct keyboard {
 // the global keyboard state
 extern keyboard_t keyboard;
 
-void init_keyboard();
+void keyboard_init();
 
 bool kb_get_key(key_t *key);
 

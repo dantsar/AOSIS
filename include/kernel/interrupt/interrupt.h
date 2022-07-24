@@ -47,7 +47,7 @@ idt_handler idt_handlers[256];
 int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags);
 
 // initialize and load the IDT
-int init_interrupt();
+int interrupt_init();
 
 // generic handler
 void isr_handler(registers_t regs);

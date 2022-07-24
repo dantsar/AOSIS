@@ -5,9 +5,13 @@
 #include <ctype.h>
 #include <string.h>
 
+#include <common/cpu.h>
+#include <kernel.h>
 #include <interrupt/interrupt.h>
 #include <interrupt/pic.h>
 #include <interrupt/keyboard.h>
+#include <memory/multiboot.h>
+#include <memory/pmm.h>
 #include <terminal/shell.h>
 #include <terminal/tty.h>
 #include <terminal/vga.h>
@@ -16,31 +20,50 @@
 extern void div_zero(void);
 extern void branch_nowhere(void);
 
-void kmain() 
+void panic(const char *msg)
+{
+	if (msg == NULL) {
+		tty_printstr("KERNEL PANIC!!\n");
+	} else {
+		kprintf("KERNEL PANIC: %s\n", msg);
+	}
+
+	for(;;)
+		cli();
+}
+
+void kmain(multiboot_info_t *mbt, uint32_t magic) 
 {
 	initialize_terminal();
+	tty_printstr("[-] Terminal Initalized\n");
 
-	if (!isprint('a')) {
-		tty_printstr("a is printable\n");
+	tty_printstr("[-] Initializing Interrupts...\n");
+	interrupt_init();
+
+	tty_printstr("[-] Initializing Keyboard...\n");
+	keyboard_init();
+
+	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+		panic("invalid bootloader magic number");
 	}
 
 	// memory management
-	// tty_printstr("[-] Initializing Physical Memory Mapping...\n");
-	// init_pmm
+	tty_printstr("[-] Initializing Physical Memory Mapping...\n");
+	pmm_init(mbt);
+
 	// tty_printstr("[-] Initializing Virtual Memory Mapping...\n");
-	// init_vmm
+	// vmm_init
 	// tty_printstr("[-] Initializing Scheduler...\n");
 	// init_sched
 
-
 	tty_printstr("[-] Initializing Interrupts...\n");
-	init_interrupt();
+	interrupt_init();
 	
 	tty_printstr("[-] Initializing Keyboard...\n");
-	init_keyboard();
+	keyboard_init();
 
 	tty_printstr("[-] Initializing Timer...\n");
-	init_timer(20, false);
+	timer_init(20, false);
 
 	tty_printstr("[-] Launching Kernel Console...\n");
 	kconsole();

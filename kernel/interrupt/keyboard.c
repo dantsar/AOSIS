@@ -120,7 +120,7 @@ static void isr_key_press() {
     outb(0x20, 0x20);   // Send EOI
 }
 
-void init_keyboard() 
+void keyboard_init() 
 {
     idt_handlers[33] = (idt_handler)&isr_key_press;
 }

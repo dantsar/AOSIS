@@ -11,6 +11,7 @@ LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 						string/memset.o 	\
 						string/memmove.o	\
 						string/memset.o		\
+						string/strcat.o		\
 						string/strlen.o		\
 						string/strnlen.o	\
 						ctype/isalnum.o		\

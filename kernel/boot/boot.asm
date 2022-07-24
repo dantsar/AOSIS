@@ -15,12 +15,11 @@ align 4
 	dd CHECKSUM
  
 %include "boot/init_gdt.inc"
-; %include "boot/init_idt.inc"
 
 section .bss
 align 16
 stack_bottom:
-resb 16384 ; 16 KiB
+resb 32768 ; 16 KiB
 stack_top:
 ; The linker script specifies _start as the entry point to the kernel and the
 section .text
@@ -32,9 +31,19 @@ _start:
 	; To set up a stack, we set the esp register to point to the top of our
 	mov esp, stack_top
 
+	mov dword [EAX_REG], eax
+
+	; arugments for kmain
+	; multiboot magic number
+	push eax
+	; address to multiboot_info_t
+	push ebx
+
 	; set up the GDT and initalize three entries 
 	; (NULL descriptor, data and code segment)
+	; does not touch kmain args
 	call __init_gdt__
+
  
 	; high level kernel ABI requires that the stack be 16 bit aligned
 	extern kmain
@@ -46,3 +55,6 @@ _start:
 .hang:	hlt
 	jmp .hang
 .end:
+
+global EAX_REG
+EAX_REG: dd 0

@@ -18,11 +18,11 @@ static void timer_callback() // registers_t regs
    if (print) {
       tty_printstr("Tick: ");
       tty_printint(tick);
-      tty_putchar('\n');
+      tty_putc('\n');
    }
 }
 
-void init_timer(uint32_t frequency, bool print_tick)
+void timer_init(uint32_t frequency, bool print_tick)
 {
    print = print_tick;
     // setup timer handler

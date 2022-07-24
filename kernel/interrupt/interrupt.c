@@ -81,7 +81,7 @@ void irq_handler(registers_t regs)
     //     tty_printstr("IRQ handler\n");
     //     tty_printstr("int no: ");
     //     tty_printint(regs.int_no);
-    //     tty_putchar('\n');
+    //     tty_putc('\n');
     // }
 
     // If interrupt from slave PIC, send reset signal to slave
@@ -105,7 +105,7 @@ void other_interrupt(registers_t regs) {
     tty_printint(regs.int_no);
 }
 
-int init_interrupt() 
+int interrupt_init() 
 {
     // initialize IDT and idt_handlers to NULL
     // memset later
