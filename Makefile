@@ -11,17 +11,23 @@ include $(DIR_ROOT)/config.mk
 
 .PHONY: all docker iso run o_debug g_debug clean
 
-all: iso 
+all: iso
 
-docker: 
+rust_start:
+	@$(DIR_RUST)/build.sh rust_build
+
+rust_build:
+	@$(DIR_SCRIPTS)/rust.sh
+
+docker:
 	@$(DIR_DOCKER)/build.sh iso
 
-iso: 
+iso:
 	@echo "CREATING ISO"
 	@$(DIR_SCRIPTS)/build.sh
 	@$(DIR_SCRIPTS)/iso.sh
 
-run: 
+run:
 	@$(DIR_SCRIPTS)/run.sh
 
 # lanuches qemu with remote gdb stub and waits
@@ -30,8 +36,8 @@ qdb:
 
 # launches and connects gdb to qemu stub
 gdb:
-	@$(DIR_SCRIPTS)/debug.sh gdb 
+	@$(DIR_SCRIPTS)/debug.sh gdb
 
 clean:
-	@$(RM) $(DIR_BUILD) 
+	@$(RM) $(DIR_BUILD)
 	@$(DIR_SCRIPTS)/clean.sh

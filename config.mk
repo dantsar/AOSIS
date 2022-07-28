@@ -1,24 +1,26 @@
 # config.mk
-# Makefile configuration settings 
+# Makefile configuration settings
 
 DIR_DOCKER		:= $(DIR_ROOT)/docker
 DIR_KERNEL		:= $(DIR_ROOT)/kernel
 DIR_BUILD		:= $(DIR_ROOT)/build
 DIR_SCRIPTS		:= $(DIR_ROOT)/scripts
 DIR_LIBC		:= $(DIR_ROOT)/libc
+DIR_RUST		:= $(DIR_ROOT)/rust
 
 CC				:= i686-elf-gcc
+# RC				:= # RUST COMPILER HERE
 
 AR 				:= ar -rc
 AS 				:= nasm
 QEMU 			:= qemu-system-i386
 RM				:= rm -rf
 
-# --------------------- 
+# ---------------------
 # Makefile color macros
 # https://gist.github.com/rsperl/d2dfe88a520968fbc1f49db0a29345b9
 # ---------------------
 
-# 
+#
 # stuff here
 #
