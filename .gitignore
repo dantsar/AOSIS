@@ -2,7 +2,6 @@
 *.iso
 *.o
 *.a
-test*
 old*
 build
 .vscode

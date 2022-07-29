@@ -9,11 +9,11 @@ include $(DIR_ROOT)/config.mk
 # Build targets
 # -----------------------------------------------------------------------------
 
-.PHONY: all docker iso run o_debug g_debug clean
+.PHONY: all docker iso run o_debug g_debug clean rust rust_build
 
 all: iso
 
-rust_start:
+rust:
 	@$(DIR_RUST)/build.sh rust_build
 
 rust_build:
