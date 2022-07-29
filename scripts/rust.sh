@@ -5,4 +5,6 @@ set -e
 
 mkdir -p $DIR_BUILD
 
-make --directory=kernel rust
+echo "in rust.sh"
+
+make --directory=kernel/rust librust.a

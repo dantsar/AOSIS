@@ -6,10 +6,9 @@ DIR_KERNEL		:= $(DIR_ROOT)/kernel
 DIR_BUILD		:= $(DIR_ROOT)/build
 DIR_SCRIPTS		:= $(DIR_ROOT)/scripts
 DIR_LIBC		:= $(DIR_ROOT)/libc
-DIR_RUST		:= $(DIR_ROOT)/rust
 
 CC				:= i686-elf-gcc
-# RC				:= # RUST COMPILER HERE
+RUSTC			:= rustc
 
 AR 				:= ar -rc
 AS 				:= nasm

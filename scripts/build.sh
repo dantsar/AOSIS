@@ -8,8 +8,7 @@ set -e
 
 mkdir -p $DIR_BUILD
 
-for PROJECTS in $SYSTEM_PROJECTS; 
-do 
-    # (cd "$DIR_ROOT/$PROJECTS" && make)
+for PROJECTS in $SYSTEM_PROJECTS;
+do
     (make --directory=$PROJECTS)
 done
