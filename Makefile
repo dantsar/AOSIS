@@ -9,19 +9,22 @@ include $(DIR_ROOT)/config.mk
 # Build targets
 # -----------------------------------------------------------------------------
 
-.PHONY: all docker iso run o_debug g_debug clean
+.PHONY: all docker iso run o_debug g_debug clean rust
 
-all: iso 
+all: iso
 
-docker: 
-	@$(DIR_DOCKER)/build.sh iso
+rust:
+	@$(DIR_SCRIPTS)/rust.sh
 
-iso: 
+docker:
+	@$(DIR_DOCKER)/docker_build.sh
+
+iso:
 	@echo "CREATING ISO"
 	@$(DIR_SCRIPTS)/build.sh
 	@$(DIR_SCRIPTS)/iso.sh
 
-run: 
+run:
 	@$(DIR_SCRIPTS)/run.sh
 
 # lanuches qemu with remote gdb stub and waits
@@ -30,8 +33,8 @@ qdb:
 
 # launches and connects gdb to qemu stub
 gdb:
-	@$(DIR_SCRIPTS)/debug.sh gdb 
+	@$(DIR_SCRIPTS)/debug.sh gdb
 
 clean:
-	@$(RM) $(DIR_BUILD) 
+	@$(RM) $(DIR_BUILD)
 	@$(DIR_SCRIPTS)/clean.sh
