@@ -21,7 +21,7 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         common/cpu.o            \
                         memory/pmm.o            \
                         libk.a                  \
-						rust/librust.a			\
+						# rust/librust.a			\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 

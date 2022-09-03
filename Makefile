@@ -13,8 +13,8 @@ include $(DIR_ROOT)/config.mk
 
 all: iso
 
-rust:
-	@$(DIR_SCRIPTS)/rust.sh
+# rust:
+# 	@$(DIR_SCRIPTS)/rust.sh
 
 docker:
 	@$(DIR_DOCKER)/docker_build.sh

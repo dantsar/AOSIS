@@ -20,8 +20,8 @@
 extern void div_zero(void);
 extern void branch_nowhere(void);
 
-// Rust test
-extern uint32_t add_nums(uint32_t n1, uint32_t n2);
+// // Rust test
+// extern uint32_t add_nums(uint32_t n1, uint32_t n2);
 
 void panic(const char *msg)
 {
@@ -68,7 +68,7 @@ void kmain(multiboot_info_t *mbt, uint32_t magic)
 	tty_printstr("[-] Initializing Timer...\n");
 	timer_init(20, false);
 
-    kprintf("add_nums: %d\n", add_nums(1U, 2U));
+    // kprintf("add_nums: %d\n", add_nums(1U, 2U));
 
     // Initialize Last
 	tty_printstr("[-] Launching Kernel Console...\n");
