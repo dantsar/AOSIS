@@ -1,5 +1,4 @@
-#ifndef _PMM_H
-#define _PMM_H
+#pragma once
 
 #include <memory/multiboot.h>
 #include <common/bitmap.h>
@@ -21,6 +20,4 @@ typedef struct pmm pmm_t;
 
 // Initialize page frame allocator
 // accept mulitboot_info_t that is provided by GRUB
-void pmm_init(multiboot_info_t *mbt);
-
-#endif
+void pmm_init(struct multiboot_info *mbt);

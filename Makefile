@@ -35,6 +35,10 @@ qdb:
 gdb:
 	@$(DIR_SCRIPTS)/debug.sh gdb
 
+.PHONY: format
+format:
+	clang-format
+
 clean:
 	@$(RM) $(DIR_BUILD)
 	@$(DIR_SCRIPTS)/clean.sh

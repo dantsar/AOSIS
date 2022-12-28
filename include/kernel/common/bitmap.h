@@ -1,5 +1,4 @@
-#ifndef _BITMAP_H
-#define _BITMAP_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -15,5 +14,3 @@ typedef struct bitmap bitmap_t;
 void bitmap_set(bitmap_t *bmap, size_t index, bool val);
 
 bool bitmap_get(bitmap_t *bmap, size_t index);
-
-#endif

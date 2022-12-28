@@ -15,9 +15,9 @@ pmm_t pmm = {
 	.total_mem = 0
 };
 
-void pmm_init(multiboot_info_t *mbt)
+void pmm_init(struct multiboot_info *mbt)
 {
-	// check the sixth bit of the flags to see 
+	// check the sixth bit of the flags to see
 	//if grub provided a valid memory map
 	if (!((mbt->flags >> 6) & 0x01)) {
 		panic("GRUB provided invalid memory map");
@@ -49,7 +49,7 @@ void pmm_init(multiboot_info_t *mbt)
 				entry->addr_high, entry->addr_low,
 				entry->len_high, entry->len_low);
 		kprintf("\ttype %d\n", entry->type);
-		
+
 		/* ---- */
 
 		if (entry->type == MULTIBOOT_MEMORY_AVAILABLE) {
@@ -79,12 +79,12 @@ void pmm_init(multiboot_info_t *mbt)
 
 
 	kprintf("done!!\n");
-	
+
 	// for(;;);
 }
 
 
-/* 
+/*
 
 move the page frame bit map to the beginning of the memory
 	but check that it fits contiguously
@@ -96,7 +96,7 @@ move the page frame bit map to the beginning of the memory
 
 
 
-/* 
+/*
     create a contiuous range for the memory map
     segment the range into 4k pages
     create a bit map of all the pages
@@ -106,12 +106,12 @@ move the page frame bit map to the beginning of the memory
     reserve the memory used by the kernel
 */
 
-/* 
+/*
 	reserve bit map in the top of the memory
 		// edge case what if the memory range is not enough to populate bitmap
 			e.g. the last memory range is 1 byte
 
-	right before the bitmap, 
+	right before the bitmap,
 	reserve the memory ranges
 
 	finish initalizeing the bitmap

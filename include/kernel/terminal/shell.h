@@ -1,5 +1,4 @@
-#ifndef _SHELL_H
-#define _SHELL_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -10,5 +9,3 @@ struct shell_command {
 };
 
 void kconsole();
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef _VGA_H
-#define _VGA_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -28,5 +27,3 @@ enum vga_color {
 uint8_t vga_color_entry(enum vga_color fg, enum vga_color bg);
 
 uint16_t vga_entry(uint8_t uc, uint8_t color);
-
-#endif 

@@ -1,6 +1,3 @@
-#ifndef _VMM_H
-#define _VMM_H
+#pragma once
 
 void vmm_init();
-
-#endif

@@ -9,14 +9,16 @@
 #include <terminal/tty.h>
 #include <terminal/shell.h>
 #include <interrupt/keyboard.h>
+#include <interrupt/pic.h>
 
 extern keyboard_t keyboard;
 
-static bool cmd_clear();
-static bool cmd_exit();
-static bool cmd_demo();
-static bool cmd_help();
-static bool cmd_amogus();
+static bool cmd_clear(void);
+static bool cmd_exit(void);
+static bool cmd_demo(void);
+static bool cmd_help(void);
+static bool cmd_amogus(void);
+static bool cmd_print_tick(void);
 
 bool (*run_cmd)() = NULL;
 static struct shell_command commands[] = {
@@ -24,20 +26,21 @@ static struct shell_command commands[] = {
     {.name = "clear",   .msg = "clears the screen",     .cmd=cmd_clear},
     {.name = "exit",    .msg = "exit the console",      .cmd=cmd_exit},
     {.name = "demo",    .msg = "run a demo",            .cmd=cmd_demo},
-    {.name = "amogus",  .msg = "amogus",                .cmd=cmd_amogus}
+    {.name = "amogus",  .msg = "sus",                   .cmd=cmd_amogus},
+    {.name = "tick",    .msg = "print timer tick",      .cmd=cmd_print_tick}
 };
 
 static char *amogus = \
 "   ###\n"
-"  ##**\n"
-"####***\n"
-"####***\n"
-"#######\n"
-"  #####\n"
+"  ##--\n"
+"==##---\n"
+"==##---\n"
+"==#####\n"
+"==#####\n"
 "  ## ##\n"
 "  ## ##\n";
 
-bool cmd_help()
+static bool cmd_help()
 {
     for (size_t i = 0; i < sizeof(commands)/sizeof(struct shell_command); i++) {
         tty_putc('\t');
@@ -49,28 +52,39 @@ bool cmd_help()
     return true;
 }
 
-static bool cmd_clear() 
+static bool cmd_clear()
 {
     tty_clear();
     return true;
 }
 
-bool cmd_exit()
+static bool cmd_exit(void)
 {
     tty_printstr("    done!\n");
     for(;;);
+
     return true;
 }
 
-bool cmd_demo()
+static bool cmd_demo(void)
 {
     tty_printstr("demo\n");
+
     return true;
 }
 
-bool cmd_amogus()
+static bool cmd_amogus(void)
 {
     tty_printstr(amogus);
+
+    return true;
+}
+
+static bool cmd_print_tick(void)
+{
+    uint32_t tick = pic_get_tick();
+    kprintf("Tick: %u\n", tick);
+
     return true;
 }
 
@@ -78,7 +92,7 @@ void command_start() {
     tty_printstr("$> ");
 }
 
-void command_run(char *cmd, size_t len) 
+void command_run(char *cmd, size_t len)
 {
     // strip whitespace from cmd
     while (!isspace(cmd[len-1])) {
@@ -121,7 +135,7 @@ void kconsole()
         }
         // print to the screen and wait for KEY_ENTER
         if (k.key == KEY_BACKSPACE && cmd_len > 0) {
-            kb_get_key(NULL); 
+            kb_get_key(NULL);
             cmd[cmd_len-1] = '\0';
             cmd_len--;
             tty_deleteprev();
@@ -133,7 +147,7 @@ void kconsole()
             memset(cmd, '\0', sizeof(cmd));
             cmd_len = 0;
             command_start();
-        } 
+        }
         else if (!isprint(k.key) || !isspace(k.key)) {
             if (cmd_len >= sizeof(cmd)) {
                 continue;

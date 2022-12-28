@@ -1,5 +1,4 @@
-#ifndef _TTY_H
-#define _TTY_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,11 +21,9 @@ void tty_write(const char *str, size_t len);
 
 void tty_printstr(const char *str);
 
-// print out num in hex 
+// print out num in hex
 void tty_printhex(uint32_t num);
 
 void tty_printint(uint32_t num);
 
 int kprintf(const char *format, ...);
-
-#endif
