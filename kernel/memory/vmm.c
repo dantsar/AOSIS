@@ -3,6 +3,4 @@
 void vmm_init()
 {
 
-
-    
 }

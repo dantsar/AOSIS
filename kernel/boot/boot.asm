@@ -15,6 +15,7 @@ align 4
 	dd CHECKSUM
 
 %include "boot/init_gdt.inc"
+%include "interrupt/init_idt.asm"
 
 section .bss
 align 16

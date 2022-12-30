@@ -6,116 +6,131 @@
 #include <stdint.h>
 #include <stddef.h>
 
-extern uint32_t kernel_start_address;
-extern uint32_t kernel_end_address;
+#define PAGE_ALIGN(x)     ((x) & 0xFFFFF000U)
+#define PAGE_INCREMENT(x) ((x) + 0x1000U)
+#define PAGE_DECREMENT(x) ((x) - 0x1000U)
 
-size_t kernel_size;
-pmm_t pmm = {
-	.mem_ranges = 0,
-	.total_mem = 0
+extern const uint8_t *kernel_end_address;
+extern const uint32_t kernel_size;
+
+struct physical_memory
+{
+    size_t total_memory;  // total system memory in bytes (including kernel and BIOS)
+
+    size_t   total_page_memory;       // total memory of all the pages (4KiB)
+    uint8_t  *page_starting_addr;     // starting address of the first page
+
+    size_t   page_count;              // total number of page frames
+    uint32_t page_frame_bitmap[8192]; // bitmap of all the pages (set : allocated)
+};
+
+static struct physical_memory pmm = {
+    .total_memory       = 0U,
+    .total_page_memory  = 0U,
+    .page_starting_addr = NULL,
+    .page_count         = 0U,
+    .page_frame_bitmap  = { 0 }
 };
 
 void pmm_init(struct multiboot_info *mbt)
 {
-	// check the sixth bit of the flags to see
-	//if grub provided a valid memory map
+	// check the sixth bit of the flags to see if grub provided a valid memory map
 	if (!((mbt->flags >> 6) & 0x01)) {
-		panic("GRUB provided invalid memory map");
+		panic("invalid GRUB memory map");
 	}
 
-	// debugging info
+	// debugging info, multiboot_info struct
 	kprintf("MMAP_ADDR: 0x%x\n", mbt->mmap_addr);
 	kprintf("MMAP_LENGTH: %d\n", mbt->mmap_length);
 	kprintf("mmm_t size: %d\n", sizeof(multiboot_memory_map_t));
 
 	uint8_t *last_mem_addr;
-	multiboot_memory_map_t *entry;
-	for (size_t i = 0; i < mbt->mmap_length;
-		 i += sizeof(multiboot_memory_map_t)) {
+	for (size_t i = 0; i < mbt->mmap_length; i += sizeof(multiboot_memory_map_t))
+    {
+        multiboot_memory_map_t *entry = (multiboot_memory_map_t *) (mbt->mmap_addr + i);
 
-		entry = (multiboot_memory_map_t *) (mbt->mmap_addr + i);
-
-		kprintf("---\n");
-
-		if (entry->type != MULTIBOOT_MEMORY_AVAILABLE) {
-			continue;
-		}
-
-		// more debugging info
-		kprintf("\tsize: %d\n"
-				"\taddr: 0x%x %x\n"
-				"\tlen: 0x%x %x\n",
-				entry->size,
-				entry->addr_high, entry->addr_low,
-				entry->len_high, entry->len_low);
-		kprintf("\ttype %d\n", entry->type);
-
-		/* ---- */
-
-		if (entry->type == MULTIBOOT_MEMORY_AVAILABLE) {
-			uint64_t temp = ((uint64_t) entry->len_high << 32) | ((uint64_t) entry->len_low);
-			pmm.total_mem += temp - (temp % 4096);
-			pmm.mem_ranges++;
+        // only use available memory regions
+		if (entry->type == MULTIBOOT_MEMORY_AVAILABLE)
+        {
+			pmm.total_memory = entry->len_low;
 
 			// last memory address
 			last_mem_addr = (uint8_t *) (entry->addr_low + entry->len_low);
-		}
 
+            // debugging info, memmory region
+            kprintf("\tsize: %d\n"
+                    "\taddr: 0x%x%x\n"
+                    "\tlen: 0x%x%x\n",
+                    entry->size,
+                    entry->addr_high, entry->addr_low,
+                    entry->len_high, entry->len_low);
+		}
+        else
+        {
+            kprintf("skipped\n");
+        }
 	}
 
-    kernel_size = &kernel_end_address - &kernel_start_address;
+    // populate physical_memory struct here with information
+    uint32_t first_page_addr = PAGE_ALIGN((uint32_t)&kernel_end_address);
+    if (first_page_addr < (uint32_t)&kernel_end_address)
+    {
+        first_page_addr = PAGE_INCREMENT(first_page_addr);
+    }
 
-	// debugging info
-	kprintf("available memory: 0x%x %x\n", ((uint32_t) (pmm.total_mem >> 32)), (uint32_t)pmm.total_mem);
-	kprintf("Kstart: 0x%x\nKend: 0x%x\n", &kernel_start_address, &kernel_end_address);
-	kprintf("Kernel Size: %d bytes\n", kernel_size);
+    pmm.page_starting_addr = (uint8_t *)first_page_addr;
 
-	/* --- */
+    uint32_t last_page_addr = PAGE_ALIGN((uint32_t)last_mem_addr);
+    if (PAGE_INCREMENT(last_page_addr) > (uint32_t)last_mem_addr)
+    {
+        last_page_addr = PAGE_DECREMENT(last_page_addr);
+    }
 
-	kprintf("last mem addr: 0x%x\n", last_mem_addr);
+    pmm.total_page_memory = PAGE_INCREMENT(last_page_addr) - first_page_addr;
+    pmm.page_count        = (pmm.total_page_memory / 4096U);
 
-	size_t bitmap_size = (pmm.total_mem / 4096) / 8;
-	pmm.bmap.index = last_mem_addr - bitmap_size;
+    // debugging info, physical memory struct
+    kprintf("\tpmm.page_starting_addr: %x\n"
+            "\tpmm.total_page_memory: %x\n"
+            "\tpmm.total_memory: %x\n"
+            "\tpmm.page_count: %x\n",
+            (uint32_t)pmm.page_starting_addr,
+            (uint32_t)pmm.total_page_memory,
+            (uint32_t)pmm.total_memory,
+            (uint32_t)pmm.page_count);
 
-
-	kprintf("done!!\n");
-
-	// for(;;);
+    kprintf("\nkernel_size: %x\n", &kernel_size);
 }
 
+uint8_t *pmm_get_page(void)
+{
+    uint8_t *page = NULL;
+    for (uint32_t i = 0; i < (pmm.page_count / 32U); i++)
+    {
+        if (pmm.page_frame_bitmap[i] != 0xFFFFFFFFU)
+        {
+            // allocate page here
+            for (uint32_t j = 0; j < 32U; j++)
+            {
 
-/*
+            }
+            // page = /* blah */;
+        }
+        else
+        {
+            // skip because all pages are allocated
+        }
+    }
 
-move the page frame bit map to the beginning of the memory
-	but check that it fits contiguously
-  maybe I should make it restricted/inaccessible, rather restricted
+    if (page == NULL)
+    {
+        panic("all pages are allocated\n");
+    }
 
-*/
+    return page;
+}
 
-
-
-
-
-/*
-    create a contiuous range for the memory map
-    segment the range into 4k pages
-    create a bit map of all the pages
-
-    create an alloc and free api
-
-    reserve the memory used by the kernel
-*/
-
-/*
-	reserve bit map in the top of the memory
-		// edge case what if the memory range is not enough to populate bitmap
-			e.g. the last memory range is 1 byte
-
-	right before the bitmap,
-	reserve the memory ranges
-
-	finish initalizeing the bitmap
-		clear everything
-
-	reserve bits for the kernel
-*/
+void pmm_free_page(uint8_t *page)
+{
+    // free page
+}

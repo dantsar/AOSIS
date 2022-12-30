@@ -9,7 +9,6 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         terminal/tty.o          \
                         terminal/shell.o        \
                         terminal/vga.o          \
-                        interrupt/init_idt.o    \
                         interrupt/interrupt.o   \
                         interrupt/keyboard.o    \
                         interrupt/pic.o         \
@@ -20,6 +19,7 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         common/ports.o          \
                         common/cpu.o            \
                         memory/pmm.o            \
+						memory/paging.o			\
                         libk.a                  \
 						# rust/librust.a			\
 

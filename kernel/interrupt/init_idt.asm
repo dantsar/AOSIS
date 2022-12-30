@@ -17,7 +17,7 @@ isr_common_stub:
     mov ax, ds          ; Lower 16-bits of eax = ds.
     push eax            ; save the data segment descriptor
 
-    mov ax, 0x10        ; load the kernel data segment descriptor
+    mov ax, GDT_DATA_SEG    ; load the kernel data segment descriptor
     mov ds, ax
     mov es, ax
     mov fs, ax
@@ -34,12 +34,12 @@ isr_common_stub:
     popa                ; Pops edi,esi,ebp...
     add esp, 8          ; Cleans up the pushed error code and pushed ISR number
     sti
-    iret                ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP 
+    iret                ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
 
 
 ; the ISRs prepare the environment for the handler by saving the processor stat
 ; setting up kernel mode segments, and then calls the C-level fault handler
-; the first push is a dummy error code for the corresponding exception 
+; the first push is a dummy error code for the corresponding exception
 ; the second push is the number of the isr.
 
 ; This macro creates a stub for an ISR which does NOT pass it's own
@@ -108,7 +108,7 @@ irq_common_stub:
     mov ax, ds          ; Lower 16-bits of eax = ds.
     push eax            ; save the data segment descriptor
 
-    mov ax, 0x10        ; load the kernel data segment descriptor
+    mov ax, GDT_DATA_SEG    ; load the kernel data segment descriptor
     mov ds, ax
     mov es, ax
     mov fs, ax

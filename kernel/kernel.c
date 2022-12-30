@@ -41,12 +41,12 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     UNUSED(mbt);
 
 	initialize_terminal();
-	kprintf("[-] Terminal Initalized\n");
+	// kprintf("[-] Terminal Initalized\n");
 
-	kprintf("[-] Initializing Interrupts...\n");
+	// kprintf("[-] Initializing Interrupts...\n");
 	interrupt_init();
 
-	kprintf("[-] Initializing Keyboard...\n");
+	// kprintf("[-] Initializing Keyboard...\n");
 	keyboard_init();
 
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
@@ -54,26 +54,24 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
 	}
 
 	// memory management
-	// kprintf("[-] Initializing Physical Memory Mapping...\n");
-	// pmm_init(mbt);
+	// kprintf("[-] Initializing Physical Memory Management...\n");
+	pmm_init(mbt);
 
-	// kprintf("[-] Initializing Virtual Memory Mapping...\n");
+	// kprintf("[-] Initializing Virtual Memory Management...\n");
 	// vmm_init
 	// kprintf("[-] Initializing Scheduler...\n");
 	// init_sched
 
-	kprintf("[-] Initializing Interrupts...\n");
+	// kprintf("[-] Initializing Interrupts...\n");
 	interrupt_init();
 
-	kprintf("[-] Initializing Keyboard...\n");
+	// kprintf("[-] Initializing Keyboard...\n");
 	keyboard_init();
 
-	kprintf("[-] Initializing Timer...\n");
+	// kprintf("[-] Initializing Timer...\n");
 	pic_init(20, false);
 
-    // kprintf("add_nums: %d\n", add_nums(1U, 2U));
-
     // Initialize Last
-	kprintf("[-] Launching Kernel Console...\n");
+	// kprintf("[-] Launching Kernel Console...\n");
 	kconsole();
 }

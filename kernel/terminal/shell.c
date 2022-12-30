@@ -20,7 +20,7 @@ static bool cmd_help(void);
 static bool cmd_amogus(void);
 static bool cmd_print_tick(void);
 
-bool (*run_cmd)() = NULL;
+static bool (*run_cmd)() = NULL;
 static struct shell_command commands[] = {
     {.name = "help",    .msg = "prints this message",   .cmd=cmd_help},
     {.name = "clear",   .msg = "clears the screen",     .cmd=cmd_clear},
