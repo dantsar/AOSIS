@@ -19,6 +19,8 @@ static bool cmd_demo(void);
 static bool cmd_help(void);
 static bool cmd_amogus(void);
 static bool cmd_print_tick(void);
+static void command_start();
+static void command_run(char *cmd, size_t len);
 
 static bool (*run_cmd)() = NULL;
 static struct shell_command commands[] = {
@@ -88,11 +90,11 @@ static bool cmd_print_tick(void)
     return true;
 }
 
-void command_start() {
+static void command_start() {
     tty_printstr("$> ");
 }
 
-void command_run(char *cmd, size_t len)
+static void command_run(char *cmd, size_t len)
 {
     // strip whitespace from cmd
     while (!isspace(cmd[len-1])) {
@@ -120,7 +122,7 @@ void command_run(char *cmd, size_t len)
 
 void kconsole()
 {
-	tty_printstr("Welcome to AOSIS: Run 'help' to get started!\n");
+    tty_printstr("Welcome to AOSIS: Run 'help' to get started!\n");
     command_start();
 
     char cmd[1024] = {0};

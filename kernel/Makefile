@@ -14,7 +14,6 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         interrupt/pic.o         \
                         div_zero.o              \
                         branch_nowhere.o        \
-                        common/bitmap.o         \
                         common/ringbuff.o       \
                         common/ports.o          \
                         common/cpu.o            \

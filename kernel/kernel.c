@@ -12,14 +12,15 @@
 #include <interrupt/pic.h>
 #include <interrupt/keyboard.h>
 #include <memory/multiboot.h>
+#include <memory/paging.h>
 #include <memory/pmm.h>
 #include <terminal/shell.h>
 #include <terminal/tty.h>
 #include <terminal/vga.h>
 
-// used to test interrupts
-extern void div_zero(void);
-extern void branch_nowhere(void);
+// // used to test interrupts
+// extern void div_zero(void);
+// extern void branch_nowhere(void);
 
 // // Rust test
 // extern uint32_t add_nums(uint32_t n1, uint32_t n2);
@@ -38,40 +39,33 @@ void panic(const char *msg)
 
 void kmain(struct multiboot_info *mbt, uint32_t magic)
 {
-    UNUSED(mbt);
-
 	initialize_terminal();
-	// kprintf("[-] Terminal Initalized\n");
+	kprintf("[-] Terminal Initalized\n");
 
-	// kprintf("[-] Initializing Interrupts...\n");
+    kprintf("[-] Initializing Interrupts...\n");
 	interrupt_init();
-
-	// kprintf("[-] Initializing Keyboard...\n");
-	keyboard_init();
 
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
 		panic("invalid bootloader magic number");
 	}
 
-	// memory management
-	// kprintf("[-] Initializing Physical Memory Management...\n");
+	// Memory Management
+	kprintf("[-] Initializing Physical Memory Management...\n");
 	pmm_init(mbt);
 
-	// kprintf("[-] Initializing Virtual Memory Management...\n");
-	// vmm_init
-	// kprintf("[-] Initializing Scheduler...\n");
+	kprintf("[-] Initializing Paging and Virtual Memory...\n");
+    paging_init();
+
+    // kprintf("[-] Initializing Scheduler...\n");
 	// init_sched
 
-	// kprintf("[-] Initializing Interrupts...\n");
-	interrupt_init();
-
-	// kprintf("[-] Initializing Keyboard...\n");
+	kprintf("[-] Initializing Keyboard...\n");
 	keyboard_init();
 
-	// kprintf("[-] Initializing Timer...\n");
+	kprintf("[-] Initializing Timer...\n");
 	pic_init(20, false);
 
     // Initialize Last
-	// kprintf("[-] Launching Kernel Console...\n");
+	kprintf("[-] Launching Kernel Console...\n");
 	kconsole();
 }

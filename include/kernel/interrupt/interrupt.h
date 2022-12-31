@@ -30,6 +30,9 @@ typedef struct registers
     uint32_t eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
 } registers_t;
 
+typedef void (*idt_handler)(registers_t);
+extern idt_handler idt_handlers[256];
+
 // Write a byte out to the specified port.
 void outb(uint16_t port, uint8_t val);
 
@@ -38,9 +41,6 @@ uint8_t inb(uint16_t port);
 
 // read word from port
 uint16_t inw(uint16_t port);
-
-typedef void (*idt_handler)(registers_t);
-idt_handler idt_handlers[256];
 
 // sets the specified entry in the IDT
 int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags);

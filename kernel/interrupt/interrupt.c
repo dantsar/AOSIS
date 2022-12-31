@@ -9,7 +9,8 @@
 extern void _load_idt();
 
 struct idt_pointer idtp;
-struct idt_desc idt[256] = {0};
+struct idt_desc idt[256]      = { 0 };
+idt_handler idt_handlers[256] = { 0 };
 
 const char *int_msgs[] = {
     "Divide by Zero",
@@ -70,10 +71,10 @@ void isr_handler(registers_t regs)
     tty_printstr(")\n");
 
     if (idt_handlers[regs.int_no] != NULL) {
-        tty_printstr("HANLDING INTERRUPT");
+        // tty_printstr("HANDLING INTERRUPT");
         idt_handler handle = idt_handlers[regs.int_no];
         handle(regs);
-        tty_printstr("HANDLED INTERRUPT");
+        // tty_printstr("HANDLED INTERRUPT");
     }
 }
 
