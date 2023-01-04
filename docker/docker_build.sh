@@ -1,4 +1,6 @@
-DOCKER_PROJECTS="rust cross_compiler"
+# DOCKER_PROJECTS="rust cross_compiler"
+DOCKER_PROJECTS="cross_compiler"
+
 
 set -e
 . ./scripts/config.sh

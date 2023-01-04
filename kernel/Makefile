@@ -9,19 +9,18 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         terminal/tty.o          \
                         terminal/shell.o        \
                         terminal/vga.o          \
-                        interrupt/init_idt.o    \
                         interrupt/interrupt.o   \
                         interrupt/keyboard.o    \
                         interrupt/pic.o         \
                         div_zero.o              \
                         branch_nowhere.o        \
-                        common/bitmap.o         \
                         common/ringbuff.o       \
                         common/ports.o          \
                         common/cpu.o            \
                         memory/pmm.o            \
+						memory/paging.o			\
                         libk.a                  \
-						rust/librust.a			\
+						# rust/librust.a			\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 

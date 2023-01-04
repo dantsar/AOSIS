@@ -1,5 +1,4 @@
-#ifndef _RINGBUFF_H
-#define _RINGBUFF_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -28,5 +27,3 @@ void ring_read(ringbuff_t *rbuff, char *buff, size_t len);
 
 // write multiple bytes into the ring buffer
 void ring_write(ringbuff_t *rbuff, char *buff, size_t len);
-
-#endif

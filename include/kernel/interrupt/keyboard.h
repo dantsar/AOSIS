@@ -1,5 +1,4 @@
-#ifndef _KEYBOARD_H
-#define _KEYBOARD_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -84,5 +83,3 @@ extern keyboard_t keyboard;
 void keyboard_init();
 
 bool kb_get_key(key_t *key);
-
-#endif

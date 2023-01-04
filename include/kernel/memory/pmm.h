@@ -1,26 +1,23 @@
-#ifndef _PMM_H
-#define _PMM_H
+#pragma once
+
+#include <stddef.h>
+#include <stdint.h>
 
 #include <memory/multiboot.h>
-#include <common/bitmap.h>
 
-struct memory_range {
-    size_t mem_start;
-    size_t len;
-};
-typedef struct memory_range memrange_t;
+#define PAGE_SIZE (4096U) // size of page in bytes
 
-struct pmm {
-    uint64_t total_mem;
-    bitmap_t bmap;
-    memrange_t *mmap;
-    size_t mem_ranges;
-};
-typedef struct pmm pmm_t;
-
+#define PAGE_ALIGN(x)     ((x) & 0xFFFFF000U)
+#define PAGE_INCREMENT(x) ((x) + PAGE_SIZE)
+#define PAGE_DECREMENT(x) ((x) - PAGE_SIZE)
 
 // Initialize page frame allocator
 // accept mulitboot_info_t that is provided by GRUB
-void pmm_init(multiboot_info_t *mbt);
+void pmm_init(struct multiboot_info *mbt);
 
-#endif
+// allocate a new page (find the first one available)
+// return the physical address of the page
+uint8_t *pmm_alloc_page(void);
+
+// free page
+void pmm_free_page(uint8_t *page);

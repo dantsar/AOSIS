@@ -12,7 +12,7 @@ extern idt_handler idt_handlers[256];
 static bool print = true;
 
 static uint32_t tick = 0;
-static void timer_callback() // registers_t regs
+static void pic_callback() // registers_t regs
 {
    tick++;
    if (print) {
@@ -22,15 +22,21 @@ static void timer_callback() // registers_t regs
    }
 }
 
-void timer_init(uint32_t frequency, bool print_tick)
+uint32_t pic_get_tick(void)
 {
-   print = print_tick;
+    return tick;
+}
+
+void pic_init(uint32_t frequency, bool print_tick)
+{
+    // Enable continuous printing of timer tick
+    print = print_tick;
+
     // setup timer handler
-    idt_handlers[32] = (idt_handler) &timer_callback;
+    idt_handlers[32] = (idt_handler) &pic_callback;
     tty_printstr("Timer frequency: ");
     tty_printint(frequency);
     tty_printstr("Hz\n");
-    // idt_set_entry(32, (uint32_t) timer_callback, 0x08, 0x8e);
 
    // The value we send to the PIT is the value to divide it's input clock
    // (1193180 Hz) by, to get our required frequency. Important to note is
