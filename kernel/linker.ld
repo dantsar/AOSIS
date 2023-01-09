@@ -6,9 +6,13 @@ SECTIONS
 
 	kernel_start_address = .;
 
+    .multiboot.data :
+    {
+		*(.multiboot.data)
+    }
+
 	.text BLOCK(4K) : ALIGN(4K)
 	{
-		*(.multiboot)
 		*(.text)
 	}
 
