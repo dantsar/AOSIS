@@ -44,7 +44,7 @@ void update_cursor(int x, int y)
 }
 
 void tty_clear() {
-	tty_buffer = (uint16_t *) 0xB8000;
+	tty_buffer = (uint16_t *) 0xC00B8000;   // 0xC00B8000 is mapped to 0xB8000 (vga buffer)
 	tty_color = vga_color_entry(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 
 	for (size_t y = 0; y < SCREEN_HEIGHT; y++)

@@ -40,7 +40,7 @@ void panic(const char *msg)
 void kmain(struct multiboot_info *mbt, uint32_t magic)
 {
 	initialize_terminal();
-	kprintf("[-] Terminal Initalized\n");
+    kprintf("[-] Terminal Initalized\n");
 
     kprintf("[-] Initializing Interrupts...\n");
 	interrupt_init();

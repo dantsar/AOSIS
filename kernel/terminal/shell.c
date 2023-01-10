@@ -11,6 +11,8 @@
 #include <interrupt/keyboard.h>
 #include <interrupt/pic.h>
 
+#define NUM_ELEMENTS(x) (sizeof(x) / sizeof((x)[0]))
+
 extern keyboard_t keyboard;
 
 static bool cmd_clear(void);
@@ -44,7 +46,8 @@ static char *amogus = \
 
 static bool cmd_help()
 {
-    for (size_t i = 0; i < sizeof(commands)/sizeof(struct shell_command); i++) {
+    for (size_t i = 0; i < NUM_ELEMENTS(commands); i++)
+    {
         tty_putc('\t');
         tty_printstr(commands[i].name);
         tty_printstr("\t");
@@ -103,7 +106,7 @@ static void command_run(char *cmd, size_t len)
     }
 
     run_cmd = NULL;
-    for (size_t i = 0; i < sizeof(commands); i++) {
+    for (size_t i = 0; i < NUM_ELEMENTS(commands); i++) {
         if (!strcmp(commands[i].name, cmd)) {
             run_cmd = commands[i].cmd;
             break;
