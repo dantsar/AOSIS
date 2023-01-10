@@ -11,7 +11,7 @@
 #define SET_BIT(num, index)       ((num) | (1U << (index)))
 #define CLEAR_BIT(num, index)     ((num) & (0U << (index)))
 
-extern const uint8_t *kernel_end_address;
+extern const uint8_t *kernel_end_addr_phys;
 extern const uint32_t kernel_size;
 
 struct physical_memory
@@ -69,13 +69,12 @@ void pmm_init(struct multiboot_info *mbt)
         else
         {
             // skip memory regions
-            // kprintf("skipped\n");
         }
 	}
 
     // populate physical_memory struct here with information
-    uint32_t first_page_addr = PAGE_ALIGN((uint32_t)&kernel_end_address);
-    if (first_page_addr < (uint32_t)&kernel_end_address)
+    uint32_t first_page_addr = PAGE_ALIGN((uint32_t)&kernel_end_addr_phys);
+    if (first_page_addr < (uint32_t)&kernel_end_addr_phys)
     {
         first_page_addr = PAGE_INCREMENT(first_page_addr);
     }
