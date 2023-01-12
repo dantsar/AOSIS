@@ -62,6 +62,15 @@ struct __attribute__((aligned (4096))) page_table
 struct page_directory *kernel_page_directory;
 
 
+static void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t addr);
+
+static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr);
+
+static void paging_flush_tlb();
+
+static void paging_page_fault_handler(registers_t regs);
+
+
 
 // addr MUST be 4KB aligned
 static void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t addr)
@@ -73,6 +82,12 @@ static void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr)
 {
     entry->phys_addr = (addr >> 12U);
+}
+
+static void paging_flush_tlb()
+{
+    asm volatile("movl %cr3,%eax");
+    asm volatile("movl %eax, %cr3");
 }
 
 static void paging_page_fault_handler(registers_t regs)
@@ -152,4 +167,6 @@ void paging_init()
     asm volatile("mov %%cr0, %0": "=r"(cr0));
     cr0 |= 0x80000000;
     asm volatile("mov %0, %%cr0":: "r"(cr0));
+
+    paging_flush_tlb();
 }
