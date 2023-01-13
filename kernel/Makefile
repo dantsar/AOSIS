@@ -17,10 +17,11 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         common/ringbuff.o       \
                         common/ports.o          \
                         common/cpu.o            \
+                        memory/kmalloc.o		\
                         memory/pmm.o            \
-						memory/paging.o			\
+                        memory/paging.o			\
                         libk.a                  \
-						# rust/librust.a			\
+                        # rust/librust.a		\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 

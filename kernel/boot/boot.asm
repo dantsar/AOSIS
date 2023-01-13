@@ -63,6 +63,7 @@ _start:
     cmp ecx, edx
     jl .identity_map_kernel
 
+
     ; add page table to the page directory
     mov eax, (temp_page_table - KERNEL_VIRTUAL_BASE)
     or eax, (PAGE_PRESENT | PAGE_WRITEABLE)
@@ -77,8 +78,8 @@ _start:
 
     ; enable paging by setting bit 31 in cr0
     mov eax, cr0
-    or eax, 0x80000000
-    mov cr0, eax ; acutally enable paging here
+    or eax, 0x80000000 ; set bit 31
+    mov cr0, eax       ; acutally enable paging here
 
     ; absolute jump to the higher half kernel
     lea ecx, [higher_half_kernel]

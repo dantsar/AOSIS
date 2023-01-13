@@ -46,7 +46,7 @@ struct page_table_entry
     uint32_t pat_support : 1;        // if set, PAT is supported, otherwise reserved
     uint32_t global_translation : 1; // if set, determines whether the translation is global
     uint32_t ignored : 3;            // Ignored bits
-    uint32_t phys_addr : 20;      // Physical address of the 4KB page
+    uint32_t phys_addr : 20;         // Physical address of the 4KB page
 };
 
 struct __attribute__((aligned (4096))) page_directory
@@ -95,6 +95,7 @@ static void paging_page_fault_handler(registers_t regs)
     UNUSED(regs);
     uint32_t faulting_address;
     asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
+
     kprintf("page fault occurred\n");
     kprintf("faulting address: %x\n", faulting_address);
     panic("page fault occurred\n");

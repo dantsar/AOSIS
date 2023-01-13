@@ -11,6 +11,7 @@
 #include <interrupt/interrupt.h>
 #include <interrupt/pic.h>
 #include <interrupt/keyboard.h>
+#include <memory/kmalloc.h>
 #include <memory/multiboot.h>
 #include <memory/paging.h>
 #include <memory/pmm.h>
@@ -55,6 +56,44 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
 
 	kprintf("[-] Initializing Paging and Virtual Memory...\n");
     paging_init();
+
+	kprintf("[-] Initializing Heap...\n");
+    kmalloc_init();
+
+    uint32_t *kmalloc_test;
+    uint32_t *test_int;
+
+    kprintf("");
+
+    kmalloc_test = (struct test *)kmalloc(8);
+    kprintf("kmalloc_test: %x\n", kmalloc_test);
+
+    test_int = (uint32_t *)kmalloc(9);
+    kprintf("kmalloc_test: %x\n", test_int);
+
+    // kmalloc_test = (struct test *)kmalloc(24);
+    // kprintf("kmalloc_test: %x\n", kmalloc_test);
+
+    // test_int = (uint32_t *)kmalloc(32);
+    // kprintf("kmalloc_test: %x\n", test_int);
+
+
+    // testing kfree
+    kprintf("Calling kfree\n");
+
+    kfree(kmalloc_test);
+    kfree(test_int);
+
+    kmalloc_test = (struct test *)kmalloc(8);
+    kprintf("kmalloc_test: %x\n", kmalloc_test);
+
+    test_int = (uint32_t *)kmalloc(9);
+    kprintf("kmalloc_test: %x\n", test_int);
+
+
+
+    // kprintf("[-] Initializing Virtual Memory Manager...\n");
+    // vmm_init();
 
     // kprintf("[-] Initializing Scheduler...\n");
 	// init_sched

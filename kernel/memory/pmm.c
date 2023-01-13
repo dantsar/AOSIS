@@ -40,11 +40,6 @@ void pmm_init(struct multiboot_info *mbt)
 		panic("invalid GRUB memory map");
 	}
 
-	// // debugging info, multiboot_info struct
-	// kprintf("MMAP_ADDR: 0x%x\n", mbt->mmap_addr);
-	// kprintf("MMAP_LENGTH: %d\n", mbt->mmap_length);
-	// kprintf("mmm_t size: %d\n", sizeof(multiboot_memory_map_t));
-
 	uint8_t *last_mem_addr;
 	for (size_t i = 0; i < mbt->mmap_length; i += sizeof(multiboot_memory_map_t))
     {
@@ -57,14 +52,6 @@ void pmm_init(struct multiboot_info *mbt)
 
 			// last memory address
 			last_mem_addr = (uint8_t *) (entry->addr_low + entry->len_low);
-
-            // // debugging info, memmory region
-            // kprintf("\tsize: %d\n"
-            //         "\taddr: 0x%x%x\n"
-            //         "\tlen: 0x%x%x\n",
-            //         entry->size,
-            //         entry->addr_high, entry->addr_low,
-            //         entry->len_high, entry->len_low);
 		}
         else
         {
@@ -89,18 +76,6 @@ void pmm_init(struct multiboot_info *mbt)
 
     pmm.total_page_memory = PAGE_INCREMENT(last_page_addr) - first_page_addr;
     pmm.page_count        = (pmm.total_page_memory / PAGE_SIZE);
-
-    // // debugging info, physical memory struct
-    // kprintf("\tpmm.page_starting_addr: %x\n"
-    //         "\tpmm.total_page_memory: %x\n"
-    //         "\tpmm.total_memory: %x\n"
-    //         "\tpmm.page_count: %x\n",
-    //         (uint32_t)pmm.page_starting_addr,
-    //         (uint32_t)pmm.total_page_memory,
-    //         (uint32_t)pmm.total_memory,
-    //         (uint32_t)pmm.page_count);
-
-    // kprintf("\nkernel_size: %x\n", &kernel_size);
 }
 
 // find and allocate a page from the page pool,
