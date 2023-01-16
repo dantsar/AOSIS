@@ -17,32 +17,32 @@ SECTIONS
 
     kernel_start_addr_phys = .;
 
-    kernel_virtual_base_addr = 0xC0000000;
-    . += kernel_virtual_base_addr;
+    kernel_base_addr_virt = 0xC0000000;
+    . += kernel_base_addr_virt;
     kernel_start_addr_virt = .;
 
-    .text ALIGN(4K) : AT(ADDR(.text) - kernel_virtual_base_addr)
+    .text ALIGN(4K) : AT(ADDR(.text) - kernel_base_addr_virt)
     {
         *(.text)
     }
 
-    .rodata ALIGN(4K) : AT(ADDR(.rodata) - kernel_virtual_base_addr)
+    .rodata ALIGN(4K) : AT(ADDR(.rodata) - kernel_base_addr_virt)
     {
         *(.rodata)
     }
 
-    .data ALIGN(4K) : AT(ADDR(.data) - kernel_virtual_base_addr)
+    .data ALIGN(4K) : AT(ADDR(.data) - kernel_base_addr_virt)
     {
         *(.data)
     }
 
-    .bss ALIGN(4K) : AT(ADDR(.bss) - kernel_virtual_base_addr)
+    .bss ALIGN(4K) : AT(ADDR(.bss) - kernel_base_addr_virt)
     {
         *(COMMON)
         *(.bss)
 
         kernel_end_addr_virt = .;
-        kernel_end_addr_phys = . - kernel_virtual_base_addr;
+        kernel_end_addr_phys = . - kernel_base_addr_virt;
         kernel_size = (kernel_end_addr_phys - kernel_start_addr_phys);
     }
 }

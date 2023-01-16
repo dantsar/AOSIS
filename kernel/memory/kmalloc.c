@@ -1,7 +1,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory/pmm.h>
 #include <memory/kmalloc.h>
+#include <memory/vmm.h>
 
 #define BLOCK_HEADER_SIZE   (8U)
 #define SMALLEST_BLOCK_SIZE (32U) // smallest block size (including header)
@@ -60,7 +62,14 @@ static void kmalloc_coalesce(struct memory_block *prev_block,
             new_block->next_block = next_block->next_block;
 
             new_block->size += next_block->size;
+
+            // update the block list tail if the last block is being coalesced
+            if (block_list_tail == next_block)
+            {
+                block_list_tail = new_block;
+            }
         }
+
     }
 
     if (prev_block != NULL)
@@ -73,7 +82,6 @@ static void kmalloc_coalesce(struct memory_block *prev_block,
         }
     }
 }
-
 
 
 void kmalloc_init(void)
@@ -128,17 +136,16 @@ void *kmalloc(size_t size)
         block = block->next_block;
     }
 
-    // NEED TO IMPLEMENT THE FUNCTIONALITY
-    // after this, it would realllllly be nice to have the tail of the list
-    // NEED TO IMPLEMENT THE FUNCTIONALITY
-
     // if a block was not allocated, increase the dynamic memory size
     if (alloc_ptr == NULL)
     {
-        // vmm_alloc_page(s ?)
+        struct memory_block *new_free_block = (struct memory_block *)vmm_alloc_page();
 
-        // I'll do this one laaaater, when I start working on the actual virtual memory manager
-        // will probably need to call kmalloc_split_block
+        new_free_block->size        = PAGE_SIZE;
+        new_free_block->free_memory = (uint8_t *)((uint32_t)new_free_block + BLOCK_HEADER_SIZE);
+        new_free_block->next_block  = NULL;
+
+        block_list_tail->next_block = new_free_block;
     }
 
     return alloc_ptr;
@@ -157,8 +164,6 @@ void kfree(void *ptr)
     // then loop through the list to get the prev element, and check if you can coalesce to the left
 
     struct memory_block *new_block = (struct memory_block *)((uint32_t)ptr - BLOCK_HEADER_SIZE);
-
-    // --- Section 1: get prev and the next blocks ---
 
     // Necessary for coalesce, get the next and previous blocks of new_block
 
@@ -186,8 +191,6 @@ void kfree(void *ptr)
         }
     }
 
-    // --- Section 2: Insertion ---
-
     if (prev_block == NULL)
     {
         // Append to the beginning of the list
@@ -207,8 +210,6 @@ void kfree(void *ptr)
         prev_block->next_block = new_block;
         new_block->next_block  = next_block;
     }
-
-    // --- Section 3: Coalesce ---
 
     kmalloc_coalesce(prev_block, new_block, next_block);
 }

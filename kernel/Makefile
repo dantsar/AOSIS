@@ -19,6 +19,7 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         common/cpu.o            \
                         memory/kmalloc.o		\
                         memory/pmm.o            \
+                        memory/vmm.o			\
                         memory/paging.o			\
                         libk.a                  \
                         # rust/librust.a		\

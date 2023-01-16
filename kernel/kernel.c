@@ -15,6 +15,7 @@
 #include <memory/multiboot.h>
 #include <memory/paging.h>
 #include <memory/pmm.h>
+#include <memory/vmm.h>
 #include <terminal/shell.h>
 #include <terminal/tty.h>
 #include <terminal/vga.h>
@@ -28,83 +29,51 @@
 
 void panic(const char *msg)
 {
-	if (msg == NULL) {
-		kprintf("KERNEL PANIC!!\n");
-	} else {
-		kprintf("KERNEL PANIC: %s\n", msg);
-	}
+    if (msg == NULL) {
+        kprintf("KERNEL PANIC!!\n");
+    } else {
+        kprintf("KERNEL PANIC: %s\n", msg);
+    }
 
-	for(;;)
-		cli();
+    for(;;)
+        cli();
 }
 
 void kmain(struct multiboot_info *mbt, uint32_t magic)
 {
-	initialize_terminal();
+    initialize_terminal();
     kprintf("[-] Terminal Initalized\n");
 
     kprintf("[-] Initializing Interrupts...\n");
-	interrupt_init();
+    interrupt_init();
 
-	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
-		panic("invalid bootloader magic number");
-	}
+    if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
+        panic("invalid bootloader magic number");
+    }
 
-	// Memory Management
-	kprintf("[-] Initializing Physical Memory Management...\n");
-	pmm_init(mbt);
+    // Memory Management
+    kprintf("[-] Initializing Physical Memory Management...\n");
+    pmm_init(mbt);
 
-	kprintf("[-] Initializing Paging and Virtual Memory...\n");
-    paging_init();
+    kprintf("[-] Initializing Paging and Virtual Memory...\n");
+    uint8_t *initial_page_table = paging_init();
 
-	kprintf("[-] Initializing Heap...\n");
+    kprintf("[-] Initializing Heap...\n");
     kmalloc_init();
 
-    uint32_t *kmalloc_test;
-    uint32_t *test_int;
-
-    kprintf("");
-
-    kmalloc_test = (struct test *)kmalloc(8);
-    kprintf("kmalloc_test: %x\n", kmalloc_test);
-
-    test_int = (uint32_t *)kmalloc(9);
-    kprintf("kmalloc_test: %x\n", test_int);
-
-    // kmalloc_test = (struct test *)kmalloc(24);
-    // kprintf("kmalloc_test: %x\n", kmalloc_test);
-
-    // test_int = (uint32_t *)kmalloc(32);
-    // kprintf("kmalloc_test: %x\n", test_int);
-
-
-    // testing kfree
-    kprintf("Calling kfree\n");
-
-    kfree(kmalloc_test);
-    kfree(test_int);
-
-    kmalloc_test = (struct test *)kmalloc(8);
-    kprintf("kmalloc_test: %x\n", kmalloc_test);
-
-    test_int = (uint32_t *)kmalloc(9);
-    kprintf("kmalloc_test: %x\n", test_int);
-
-
-
-    // kprintf("[-] Initializing Virtual Memory Manager...\n");
-    // vmm_init();
+    kprintf("[-] Initializing Virtual Memory Manager...\n");
+    vmm_init(initial_page_table);
 
     // kprintf("[-] Initializing Scheduler...\n");
-	// init_sched
+    // init_sched
 
-	kprintf("[-] Initializing Keyboard...\n");
-	keyboard_init();
+    kprintf("[-] Initializing Keyboard...\n");
+    keyboard_init();
 
-	kprintf("[-] Initializing Timer...\n");
-	pic_init(20, false);
+    kprintf("[-] Initializing Timer...\n");
+    pic_init(20, false);
 
     // Initialize Last
-	kprintf("[-] Launching Kernel Console...\n");
-	kconsole();
+    kprintf("[-] Launching Kernel Console...\n");
+    kconsole();
 }
