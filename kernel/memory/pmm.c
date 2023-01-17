@@ -9,7 +9,7 @@
 
 #define CHECK_BIT_SET(num, index) ((num) & (1U << (index)))
 #define SET_BIT(num, index)       ((num) | (1U << (index)))
-#define CLEAR_BIT(num, index)     ((num) & (0U << (index)))
+#define CLEAR_BIT(num, index)     ((num) & ~(1U << (index)))
 
 extern const uint8_t *kernel_end_addr_phys;
 extern const uint32_t kernel_size;
@@ -40,11 +40,6 @@ void pmm_init(struct multiboot_info *mbt)
 		panic("invalid GRUB memory map");
 	}
 
-	// // debugging info, multiboot_info struct
-	// kprintf("MMAP_ADDR: 0x%x\n", mbt->mmap_addr);
-	// kprintf("MMAP_LENGTH: %d\n", mbt->mmap_length);
-	// kprintf("mmm_t size: %d\n", sizeof(multiboot_memory_map_t));
-
 	uint8_t *last_mem_addr;
 	for (size_t i = 0; i < mbt->mmap_length; i += sizeof(multiboot_memory_map_t))
     {
@@ -57,14 +52,6 @@ void pmm_init(struct multiboot_info *mbt)
 
 			// last memory address
 			last_mem_addr = (uint8_t *) (entry->addr_low + entry->len_low);
-
-            // // debugging info, memmory region
-            // kprintf("\tsize: %d\n"
-            //         "\taddr: 0x%x%x\n"
-            //         "\tlen: 0x%x%x\n",
-            //         entry->size,
-            //         entry->addr_high, entry->addr_low,
-            //         entry->len_high, entry->len_low);
 		}
         else
         {
@@ -73,6 +60,8 @@ void pmm_init(struct multiboot_info *mbt)
 	}
 
     // populate physical_memory struct here with information
+
+    // addr of the first page
     uint32_t first_page_addr = PAGE_ALIGN((uint32_t)&kernel_end_addr_phys);
     if (first_page_addr < (uint32_t)&kernel_end_addr_phys)
     {
@@ -81,6 +70,7 @@ void pmm_init(struct multiboot_info *mbt)
 
     pmm.page_starting_addr = (uint8_t *)first_page_addr;
 
+    // trim the last page to make sure that it is entirely 4KiB
     uint32_t last_page_addr = PAGE_ALIGN((uint32_t)last_mem_addr);
     if (PAGE_INCREMENT(last_page_addr) > (uint32_t)last_mem_addr)
     {
@@ -89,18 +79,6 @@ void pmm_init(struct multiboot_info *mbt)
 
     pmm.total_page_memory = PAGE_INCREMENT(last_page_addr) - first_page_addr;
     pmm.page_count        = (pmm.total_page_memory / PAGE_SIZE);
-
-    // // debugging info, physical memory struct
-    // kprintf("\tpmm.page_starting_addr: %x\n"
-    //         "\tpmm.total_page_memory: %x\n"
-    //         "\tpmm.total_memory: %x\n"
-    //         "\tpmm.page_count: %x\n",
-    //         (uint32_t)pmm.page_starting_addr,
-    //         (uint32_t)pmm.total_page_memory,
-    //         (uint32_t)pmm.total_memory,
-    //         (uint32_t)pmm.page_count);
-
-    // kprintf("\nkernel_size: %x\n", &kernel_size);
 }
 
 // find and allocate a page from the page pool,
@@ -113,9 +91,9 @@ uint8_t *pmm_alloc_page(void)
     bool page_found = false; // flag used for escaping for loops
     for (uint32_t i = 0; i < (pmm.page_count / 32U) && !page_found; i++)
     {
-        uint32_t page_bit_map = pmm.page_frame_bitmap[i];
+        uint32_t page_bitmap = pmm.page_frame_bitmap[i];
 
-        if (page_bit_map == 0xFFFFFFFFU)
+        if (page_bitmap == 0xFFFFFFFFU)
         {
             // skip because all pages are allocated
             continue;
@@ -125,13 +103,13 @@ uint8_t *pmm_alloc_page(void)
         for (uint32_t j = 0; j < 32U && !page_found; j++)
         {
             // find first bit that is not set
-            if (!CHECK_BIT_SET(page_bit_map, j))
+            if (!CHECK_BIT_SET(page_bitmap, j))
             {
                 // get physical address of the allocated page
-                alloc_page_addr = (uint8_t *)((uint32_t)pmm.page_starting_addr + (32U * PAGE_SIZE * i) + (PAGE_SIZE * j));
+                alloc_page_addr = (uint8_t *)((uint32_t)pmm.page_starting_addr + (PAGE_SIZE * (32U * i)) + (PAGE_SIZE * j));
 
                 // set bit in the bitmap
-                pmm.page_frame_bitmap[i] = SET_BIT(page_bit_map, j);
+                pmm.page_frame_bitmap[i] = SET_BIT(page_bitmap, j);
                 page_found = true;
             }
         }
@@ -148,13 +126,7 @@ uint8_t *pmm_alloc_page(void)
 // free page by clearing corresponding bit in the bitmap
 void pmm_free_page(uint8_t *page)
 {
-    uint32_t page_to_clear = (uint32_t) page;
-
-    // align page if necessary
-    if (PAGE_ALIGN(page_to_clear) != page_to_clear)
-    {
-        page_to_clear = PAGE_ALIGN(page_to_clear);
-    }
+    uint32_t page_to_clear = PAGE_ALIGN((uint32_t)page);
 
     // check if page is in page pool
     const uint32_t last_page_addr = (uint32_t)pmm.page_starting_addr * (PAGE_SIZE * (pmm.page_count  - 1U));
@@ -162,11 +134,11 @@ void pmm_free_page(uint8_t *page)
         (page_to_clear <= last_page_addr))
     {
         // get page index within page pool bitmap
-        const uint32_t page_index          = (page_to_clear - (uint32_t)pmm.page_starting_addr) / PAGE_SIZE;
-        const uint32_t bitmap_index        = page_index / 32U;
-        const uint32_t bit_in_bitmap_index = page_index - bitmap_index;
+        const uint32_t page_index    = (page_to_clear - (uint32_t)pmm.page_starting_addr) / PAGE_SIZE;
+        const uint32_t bitmap_index  = page_index / 32U;
+        const uint32_t bit_in_bitmap = page_index % 32U;
 
-        pmm.page_frame_bitmap[bitmap_index] = CLEAR_BIT(pmm.page_frame_bitmap[bitmap_index], bit_in_bitmap_index);
+        pmm.page_frame_bitmap[bitmap_index] = CLEAR_BIT(pmm.page_frame_bitmap[bitmap_index], bit_in_bitmap);
     }
     else
     {

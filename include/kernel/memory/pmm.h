@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory/memory.h>
 #include <memory/multiboot.h>
 
 #define PAGE_SIZE (4096U) // size of page in bytes
