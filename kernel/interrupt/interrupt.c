@@ -148,7 +148,7 @@ int interrupt_init()
         uint8_t flags;
     };
 
-    static struct idt_config idt_cfg[] = {
+    static struct idt_config idt_cfg[48] = {
         { 0,  (uint32_t)isr0,  KERNEL_CODE_SEGMENT, 0x8E },
         { 1,  (uint32_t)isr1,  KERNEL_CODE_SEGMENT, 0x8E },
         { 2,  (uint32_t)isr2,  KERNEL_CODE_SEGMENT, 0x8E },

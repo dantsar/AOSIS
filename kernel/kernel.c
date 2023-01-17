@@ -64,6 +64,13 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
+    // // test vmm expansion UUUNTESTED
+    // for (size_t i = 0; i < 2048; i++)
+    // {
+    //     uint8_t * block = vmm_alloc_page();
+    //     *block = 1U;
+    // }
+
     // kprintf("[-] Initializing Scheduler...\n");
     // init_sched
 

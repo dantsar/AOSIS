@@ -29,7 +29,7 @@ extern uint32_t kernel_start_addr_virt;
 //     uint32_t ignored : 1;           // Ignored bit
 //     uint32_t page_size : 1;         // Determines pages size, set to 0 if 4KB page
 //     uint32_t ignored_2 : 4;         // Ignored bits
-//     uint32_t phys_addr : 20;        //
+//     uint32_t phys_addr : 20;        // Physical address of the 4KB page
 // };
 
 // // 32-bit page table entry that maps a 4KB page
@@ -136,14 +136,14 @@ uint8_t *paging_init()
     }
 
     // add the mapped page table to the page directory
-    struct page_directory_entry page_directory_entry = { 0 };
-    paging_set_page_directory_addr(&page_directory_entry, V2P_ADDR((uint32_t)&page_table->entries));
-    page_directory_entry.present = true;
-    page_directory_entry.r_w     = true;
+    struct page_directory_entry pd_entry = { 0 };
+    paging_set_page_directory_addr(&pd_entry, V2P_ADDR((uint32_t)&page_table->entries));
+    pd_entry.present = true;
+    pd_entry.r_w     = true;
 
     // add page table to the page directory
     uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)&kernel_start_addr_virt);
-    kernel_page_directory->entries[page_table_address] = page_directory_entry;
+    kernel_page_directory->entries[page_table_address] = pd_entry;
 
     // Configure the page fault handler
     idt_handlers[14] = paging_page_fault_handler;
@@ -168,3 +168,22 @@ void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t addr)
 {
     entry->phys_addr = (addr >> 12U);
 }
+
+
+// void paging_add_page_table(/* page_table_phys_addr */, /* page_table_index */)
+void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
+{
+    struct page_directory_entry pd_entry = { 0 };
+
+    paging_set_page_directory_addr(&pd_entry, (uint32_t)pt_phys_addr);
+    pd_entry.present = true;
+    pd_entry.r_w     = true;
+
+
+    uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)pt_virt_addr);
+    kernel_page_directory->entries[page_table_address] = pd_entry;
+
+    paging_flush_tlb();
+}
+
+// void paging_add_page_table

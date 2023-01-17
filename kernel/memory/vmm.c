@@ -23,16 +23,18 @@
 
 #define HIGH_WATER_THRESHOLD (1022) // leave a buffer of two pages
 
+#define PAGE_RANGE (1 << 22U) // addressable memory from a single page table
+
+
 struct vmm_block_desc
 {
     uint32_t bitmap[VMM_BITMAP_SIZE]; // each bit is a page (4KiB)
 
-    size_t high_water_mark;           // 0-1023 indecies of the page table
-    size_t free_pages;                //
+    size_t high_water_mark;           // the first unallocated index in page table (0-1023)
+    size_t free_pages;                // number of available pages
 
-    uint8_t *first_page; // the virtual address of the first page in the vmm block
+    uint8_t *first_page;           // the virtual address of the first page in the vmm block
     struct page_table *page_table; // page table
-
 
     struct vmm_block_desc *next_vmm_block;
 };
@@ -110,7 +112,7 @@ void vmm_init(uint8_t *initial_page_table)
     vmm_block_list_tail = initial_vmm_block;
 }
 
-
+// TODO: add more comments
 uint8_t *vmm_alloc_page(void)
 {
     // loop throught the list and find an entry in the page range
@@ -127,7 +129,7 @@ uint8_t *vmm_alloc_page(void)
 
         uint32_t index_in_bitmap = vmm_get_page_from_bitmap(vmm_block->bitmap, vmm_block->first_page, &vmm_page);
 
-        if (vmm_page != NULL)
+        if (vmm_page != NULL) // TODO: go over these if statements THE HIGH WATER MARK HERE IS BEING TREATED HERE AS THE LAST ALLOCATED PAGE BUT IT SHOULD BE THE FIRST UNALLOCATED PAGE TODO: FIIIIIIIIIIIIX
         {
             vmm_block->free_pages--;
 
@@ -144,20 +146,59 @@ uint8_t *vmm_alloc_page(void)
         }
     }
 
-    // assume vmm page is an "available" page in the virtual address space (either free or needs to be allocated)
-    if (vmm_page == NULL /* || ABOVE THRESHOLD */)
+    // I'm not convinced that this check does anything. It maybe that the pmm will panic before this occurs
+    if (vmm_page == NULL)
     {
-        // assumption is that the tail has a buffer of a few pages, so that will be use for allocating a new page table
+        panic("out of memory\n");
+    }
 
-        // might need to have a spare vmm block allocated
-        /* ************* */
-        // TODO: virtual address space needs to be expanded, create a vmm block, or use a preallocated one?
-        /* ************* */
+    // TODO: I need to figure out the interaction for a kmalloc while allocating a new vmm block with 1022 and 1023
 
-        //  imma ignore it for now...
+    /* ************ THIS IS UNTESTED ************ */
+    // assume vmm page is an "available" page in the virtual address space (either free or needs to be allocated)
+    static bool allocating_new_block = false;
+    if (vmm_block->high_water_mark == HIGH_WATER_THRESHOLD && vmm_block->next_vmm_block == NULL && !allocating_new_block)
+    {
+        allocating_new_block = true; // potential infinite loop if kmalloc calls vmm_alloc_page, so add a flag for now
+
+        // INITIALIZE THE VMM_BLOCK DESCRIPTOR
+        // I'm allocating the last few pages for expanding the vmm block
+        struct vmm_block_desc *new_vmm_block = (struct vmm_block_desc *)kmalloc(sizeof(struct vmm_block_desc));
+        memset(new_vmm_block, 0U, sizeof(struct vmm_block_desc));
+
+        new_vmm_block->free_pages      = PAGE_TABLE_INDECIES;
+        new_vmm_block->high_water_mark = 0U;
+
+        // get the last page in the current vmm block and allocate it as a page table for the next vmm block
+        uint32_t index_in_bitmap = HIGH_WATER_THRESHOLD;
+        struct page_table *new_page_table = (struct page_table *)((uint32_t)vmm_block->first_page + (PAGE_SIZE * index_in_bitmap));
+        memset(new_page_table, 0, PAGE_SIZE);
+
+        new_vmm_block->page_table = new_page_table; // the sus imposter
+        new_vmm_block->first_page = (uint8_t *)((uint32_t)vmm_block->first_page + PAGE_RANGE);
+
+        // append new vmm block to the list of vmm blocks
+        new_vmm_block->next_vmm_block = NULL;
+        vmm_block->next_vmm_block     = new_vmm_block;
+
+        // allocate a physical page for the new page table
+        struct page_table_entry *pt_entry = &(vmm_block->page_table->entries[HIGH_WATER_THRESHOLD]);
+
+        uint8_t *phys_page = pmm_alloc_page();
+        paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
+
+        pt_entry->present = true;
+        pt_entry->r_w     = true;
+        pt_entry->present = true;
+
+        paging_add_page_table(phys_page, new_vmm_block->first_page);
+
+        allocating_new_block = false;
     }
 
     // if vmm_page != NULL ==> vmm_block != NULL
+
+    // this should be a separate function for checking and allocating a physical page to the virtual page
 
     // Check if the virtual page is mapped in virtual memory
     uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)vmm_page);
@@ -183,6 +224,7 @@ uint8_t *vmm_alloc_page(void)
 // alloc continguous pages?
 // vmm_alloc_num_pages()
 
+// TODO: add more comments
 void vmm_free_page(uint8_t *page)
 {
     uint32_t page_to_clear = PAGE_ALIGN((uint32_t)page);

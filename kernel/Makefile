@@ -21,6 +21,8 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         memory/pmm.o            \
                         memory/vmm.o			\
                         memory/paging.o			\
+                        task/task.o				\
+                        task/scheduler.o		\
                         libk.a                  \
                         # rust/librust.a		\
 

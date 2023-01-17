@@ -17,7 +17,7 @@ struct page_directory_entry
     uint32_t ignored : 1;           // Ignored bit
     uint32_t page_size : 1;         // Determines pages size, set to 0 if 4KB page
     uint32_t ignored_2 : 4;         // Ignored bits
-    uint32_t phys_addr : 20;        //
+    uint32_t phys_addr : 20;        // Physical address of the 4KB page
 };
 
 // 32-bit page table entry that maps a 4KB page
@@ -52,3 +52,5 @@ struct __attribute__((aligned (4096))) page_table
 uint8_t *paging_init();
 
 void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t addr);
+
+void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr);
