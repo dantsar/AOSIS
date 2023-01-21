@@ -5,8 +5,8 @@
 extern idtp
 extern isr_handler
 
-global _load_idt
-_load_idt:
+global load_idt_asm
+load_idt_asm:
     lidt [idtp]
     ret
 

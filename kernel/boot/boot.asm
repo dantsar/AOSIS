@@ -16,9 +16,11 @@ align 4
 
 section .bss
 ; allocate stack
+global stack_top
+
 align 16
 stack_bottom:
-resb 16384 ; 16 KiB
+resb 4096 ; 4 KiB
 stack_top:
 
 ; allocate temporary page directory and page table to enable the higher half kernel
@@ -49,19 +51,19 @@ _start:
     mov ebx, 0x0    ; page table entry
     mov ecx, 0      ; counter for loop
     mov edx, PAGES_IN_PAGE_TABLE
-.identity_map_kernel:
-    ; from address 0x0 add each page to the page table
-    mov ebx, eax
-    or ebx, (PAGE_PRESENT | PAGE_WRITEABLE)
+    .identity_map_kernel:
+        ; from address 0x0 add each page to the page table
+        mov ebx, eax
+        or ebx, (PAGE_PRESENT | PAGE_WRITEABLE)
 
-    ; write ebx to page table
-    mov [(temp_page_table - KERNEL_VIRTUAL_BASE) + ecx * 4], ebx
+        ; write ebx to page table
+        mov [(temp_page_table - KERNEL_VIRTUAL_BASE) + ecx * 4], ebx
 
-    add eax, 0x1000 ; increment by a page
+        add eax, 0x1000 ; increment by a page
 
-    inc ecx
-    cmp ecx, edx
-    jl .identity_map_kernel
+        inc ecx
+        cmp ecx, edx
+        jl .identity_map_kernel
 
 
     ; add page table to the page directory
@@ -87,8 +89,8 @@ _start:
 .end:
 
 section .text
-%include "boot/init_gdt.inc"
 %include "interrupt/init_idt.asm"
+%include "boot/init_gdt.inc"
 
 higher_half_kernel:
     ; update stack to virtual address
@@ -97,7 +99,7 @@ higher_half_kernel:
 	; set up the GDT and initalize three entries
 	; (NULL descriptor, data and code segment)
 	; does not touch kmain args
-	call __init_gdt__
+	call gdt_init_asm
 
 	; high level kernel ABI requires that the stack be 16 bit aligned
 	extern kmain

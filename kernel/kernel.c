@@ -27,6 +27,8 @@
 // // Rust test
 // extern uint32_t add_nums(uint32_t n1, uint32_t n2);
 
+extern void gdt_load_tss_asm(void);
+
 void panic(const char *msg)
 {
     if (msg == NULL) {
@@ -64,8 +66,10 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
+
+    gdt_load_tss_asm();
     // // test vmm expansion UUUNTESTED
-    // for (size_t i = 0; i < 2048; i++)
+    // for (size_t i = 0; i < 1024; i++)
     // {
     //     uint8_t * block = vmm_alloc_page();
     //     *block = 1U;

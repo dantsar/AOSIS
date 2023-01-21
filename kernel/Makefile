@@ -17,6 +17,7 @@ KERNEL_SOURCE     :=  kernel.o                  \
                         common/ringbuff.o       \
                         common/ports.o          \
                         common/cpu.o            \
+                        memory/gdt.o			\
                         memory/kmalloc.o		\
                         memory/pmm.o            \
                         memory/vmm.o			\

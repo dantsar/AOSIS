@@ -6,7 +6,7 @@
 
 #define KERNEL_CODE_SEGMENT (0x08)
 
-extern void _load_idt();
+extern void load_idt_asm();
 
 struct idt_pointer idtp;
 struct idt_desc idt[256]      = { 0 };
@@ -209,7 +209,7 @@ int interrupt_init()
         idt_set_entry(i, (uint32_t)other_interrupt, 0x08, 0x8E);
     }
 
-    _load_idt();
+    load_idt_asm();
 
 	asm volatile("sti");
 

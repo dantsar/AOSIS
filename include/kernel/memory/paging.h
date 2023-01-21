@@ -18,7 +18,7 @@ struct page_directory_entry
     uint32_t page_size : 1;         // Determines pages size, set to 0 if 4KB page
     uint32_t ignored_2 : 4;         // Ignored bits
     uint32_t phys_addr : 20;        // Physical address of the 4KB page
-};
+} __attribute__((packed));
 
 // 32-bit page table entry that maps a 4KB page
 struct page_table_entry
@@ -34,7 +34,7 @@ struct page_table_entry
     uint32_t global_translation : 1; // If set, determines whether the translation is global
     uint32_t ignored : 3;            // Ignored bits
     uint32_t phys_addr : 20;         // Physical address of the 4KB page
-};
+} __attribute__((packed));
 
 struct __attribute__((aligned (4096))) page_directory
 {

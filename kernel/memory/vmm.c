@@ -22,7 +22,6 @@
 #define VMM_BITMAP_SIZE     (((PAGE_TABLE_RANGE / PAGE_SIZE) / (sizeof(uint32_t) * 8)))
 
 #define HIGH_WATER_THRESHOLD (1022) // leave a buffer of two pages
-
 #define PAGE_RANGE (1 << 22U) // addressable memory from a single page table
 
 
@@ -181,6 +180,7 @@ uint8_t *vmm_alloc_page(void)
         new_vmm_block->next_vmm_block = NULL;
         vmm_block->next_vmm_block     = new_vmm_block;
 
+        // I'm not sure that this in the right place, however, I'll figure that out later
         // allocate a physical page for the new page table
         struct page_table_entry *pt_entry = &(vmm_block->page_table->entries[HIGH_WATER_THRESHOLD]);
 

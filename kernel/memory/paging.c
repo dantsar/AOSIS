@@ -58,7 +58,7 @@ extern uint32_t kernel_start_addr_virt;
 //     struct page_table_entry entries[1024];
 // };
 
-static struct page_directory *kernel_page_directory;
+struct page_directory *kernel_page_directory;
 
 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr);
@@ -66,7 +66,6 @@ static void paging_set_page_directory_addr(struct page_directory_entry *entry, u
 static void paging_flush_tlb();
 
 static void paging_page_fault_handler(registers_t regs);
-
 
 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr)
