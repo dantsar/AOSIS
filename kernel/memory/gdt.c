@@ -4,8 +4,36 @@
 #include <memory/gdt.h>
 #include <memory/memory.h>
 
-// https://en.wikipedia.org/wiki/Global_Descriptor_Table
+struct tss {
+    uint32_t back_link;
+    uint32_t esp0;
+    uint32_t ss0;
+    uint32_t esp1;
+    uint32_t ss1;
+    uint32_t esp2;
+    uint32_t ss2;
+    uint32_t cr3;
+    uint32_t eip;
+    uint32_t eflags;
+    uint32_t eax;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
+    uint32_t esp;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t es;
+    uint32_t cs;
+    uint32_t ss;
+    uint32_t ds;
+    uint32_t fs;
+    uint32_t gs;
+    uint32_t ldt;
+    uint32_t io_map_offset;
+};
 
+// https://en.wikipedia.org/wiki/Global_Descriptor_Table
 struct gdt_entry
 {
     uint16_t segment_limit_1; // first 16 bits of the segment limit
@@ -29,7 +57,7 @@ struct gdt_entry
     {
         uint8_t segment_limit_2 : 4; // last 4 bits of the segment limit
         uint8_t res : 1;             // Reserved
-        uint8_t l : 1;               // Long-mode (0: )
+        uint8_t l : 1;               // Long-mode (0: 32-bit mode, 1: long mode)
         uint8_t db : 1;              // Size flags (0: 16-bit protected, 1: 32-bit protected)
         uint8_t g : 1;               // Granularity (0: 1 byte blocks, 1: 4KiB blocks)
     } __attribute__((packed)) limit_and_flags;
@@ -52,7 +80,7 @@ struct gdt_pointer
 static struct gdt_entry global_descriptor_table[64] = { 0 };
 static struct gdt_pointer gdt_descriptor            = { 0 };
 
-static uint8_t tss_region[256];
+static uint8_t tss_region[256]; // TODO: struct tss
 
 // TODO: clean this up and add comments
 static struct gdt_entry gdt_create_entry(uint32_t segment_limit, // 20-bit value

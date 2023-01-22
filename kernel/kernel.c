@@ -16,6 +16,8 @@
 #include <memory/paging.h>
 #include <memory/pmm.h>
 #include <memory/vmm.h>
+#include <task/task.h>
+#include <task/scheduler.h>
 #include <terminal/shell.h>
 #include <terminal/tty.h>
 #include <terminal/vga.h>
@@ -66,25 +68,27 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
-    // test vmm expansion UUUNTESTED
+    // // test vmm expansion UUUNTESTED
     // for (size_t i = 0; i < 1024; i++)
     // {
     //     uint8_t * block = vmm_alloc_page();
     //     *block = 1U;
     // }
 
+    kprintf("[-] Initializing Timer...\n");
+    pic_init(100, false);
+
     gdt_load_tss_asm();
 
-    // kprintf("[-] Initializing Scheduler...\n");
-    // init_sched
+    task_init();
+
+    kprintf("[-] Initializing Scheduler...\n");
+    scheduler_init();
 
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
 
-    kprintf("[-] Initializing Timer...\n");
-    pic_init(20, false);
-
     // Initialize Last
     kprintf("[-] Launching Kernel Console...\n");
-    kconsole();
+    kshell();
 }

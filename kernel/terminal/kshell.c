@@ -6,10 +6,11 @@
 #include <string.h>
 
 #include <common/cpu.h>
-#include <terminal/tty.h>
-#include <terminal/shell.h>
 #include <interrupt/keyboard.h>
 #include <interrupt/pic.h>
+#include <task/scheduler.h>
+#include <terminal/tty.h>
+#include <terminal/shell.h>
 
 #define NUM_ELEMENTS(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -123,7 +124,7 @@ static void command_run(char *cmd, size_t len)
     tty_printstr("'\n");
 }
 
-void kconsole()
+void kshell()
 {
     tty_printstr("Welcome to AOSIS: Run 'help' to get started!\n");
     command_start();
@@ -132,7 +133,8 @@ void kconsole()
     size_t cmd_len = 0;
 
     for(;;) {
-        halt(); // halt until an interrupt occurs
+        halt();
+        scheduler(); // halt until an interrupt occurs
 
         key_t k;
         if (kb_get_key(&k) == false) {

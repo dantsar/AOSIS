@@ -12,10 +12,12 @@ load_idt_asm:
 
 global isr_common_stub
 isr_common_stub:
-    pusha               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+    pushad               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
 
-    mov ax, ds          ; Lower 16-bits of eax = ds.
-    push eax            ; save the data segment descriptor
+    push ds
+    push es
+    push fs
+    push gs
 
     mov ax, GDT_DATA_SEG    ; load the kernel data segment descriptor
     mov ds, ax
@@ -31,7 +33,13 @@ isr_common_stub:
     mov fs, bx
     mov gs, bx
 
-    popa                ; Pops edi,esi,ebp...
+    popad               ; Pops edi,esi,ebp,esp,ebx,edx,ecx,eax
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
     add esp, 8          ; Cleans up the pushed error code and pushed ISR number
     sti
     iret                ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP

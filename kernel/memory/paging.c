@@ -167,7 +167,6 @@ uint8_t *paging_init()
     return (uint8_t *)page_table; // return the virtual address of the initial page table for vmm_init
 }
 
-// void paging_add_page_table(/* page_table_phys_addr */, /* page_table_index */)
 void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
 {
     struct page_directory_entry pd_entry = { 0 };
@@ -175,7 +174,6 @@ void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
     paging_set_page_directory_addr(&pd_entry, (uint32_t)pt_phys_addr);
     pd_entry.present = true;
     pd_entry.r_w     = true;
-
 
     uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)pt_virt_addr);
     kernel_page_directory->entries[page_table_address] = pd_entry;
@@ -211,3 +209,41 @@ uint8_t *paging_populate_virtual_page(uint8_t *page_table_ptr, uint8_t *virt_pag
 
     return phys_page;
 }
+
+
+// void paging_copy_virtual_address_space(struct page_directory *src, struct page_directory * dest)
+void paging_copy_virtual_address_space(uint8_t *src, uint8_t * dest)
+{
+    struct page_directory *src_pd  = (struct page_directory *)src;
+    struct page_directory *dest_pd = (struct page_directory *)dest;
+
+    // actually, I'll say that I say that copying an address spaces is a little more complicated that I think
+
+    /* TODO: delete this brain dump
+        for the kernel memory, I'll need to actually copy the same page table entries
+
+        however, for the userspace memory, I'll need to copy the physical pages byte-by-byte
+            - the Linux kernel optimizes this by implementing a copy on write, where is copies over the page table entires, however,
+              it marks them as read only
+              THEN, when a userspace process attempts to write to a page, a page fault is triggered and then the kernel ACTAULLY
+              copies over the memory to the new process
+              (the logic is that is smooths out the demand on the memory manager, and not all pages are going to be written to )
+    */
+
+   /*
+    however, on complication that I see is, how are the kernel pages going to be copied over, and what is the behavior overtime?
+
+    my main concern is that the virtual memory manager is going to expand the kernel accress space over time and that will not be reflected across
+    the high memory in all tasks, for that to be the case, the kernel will need to manually add the new page range to all tasks?
+
+    for the higher half memory, the kernel code never changes, however, changes to the kernel heap has to be consistent across all address spaces
+   */
+
+    // loop through src_pd
+    for (uint32_t i = 0; i < PAGE_TABLE_INDICES; i++)
+    {
+        dest_pd->entries[i] = src_pd->entries[i];
+    }
+
+}
+

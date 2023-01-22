@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include <common/common_macros.h>
 #include <kernel.h>
 #include <memory/memory.h>
 #include <memory/kmalloc.h>
@@ -12,17 +13,10 @@
 #include <memory/vmm.h>
 #include <terminal/tty.h>
 
-#define CHECK_BIT_SET(num, index) ((num) & (1U << (index)))
-#define SET_BIT(num, index)       ((num) | (1U << (index)))
-#define CLEAR_BIT(num, index)     ((num) & ~(1U << (index)))
+#define VMM_BITMAP_SIZE (((PAGE_TABLE_RANGE / PAGE_SIZE) / (sizeof(uint32_t) * 8)))
 
-// TODO: TO BE CLEANED UP!!!!
-#define PAGE_TABLE_INDECIES (1024U)
-#define PAGE_TABLE_RANGE    (PAGE_TABLE_INDECIES * PAGE_SIZE)
-#define VMM_BITMAP_SIZE     (((PAGE_TABLE_RANGE / PAGE_SIZE) / (sizeof(uint32_t) * 8)))
-
-#define HIGH_WATER_THRESHOLD (1022) // leave a buffer of two pages
-#define PAGE_RANGE (1 << 22U) // addressable memory from a single page table
+#define HIGH_WATER_THRESHOLD (1022)     // leave a buffer of two pages
+#define PAGE_RANGE           (1 << 22U) // addressable memory from a single page table
 
 
 struct vmm_block_desc
@@ -166,7 +160,7 @@ uint8_t *vmm_alloc_page(void)
         struct vmm_block_desc *new_vmm_block = (struct vmm_block_desc *)kmalloc(sizeof(struct vmm_block_desc));
         memset(new_vmm_block, 0U, sizeof(struct vmm_block_desc));
 
-        new_vmm_block->free_pages      = PAGE_TABLE_INDECIES;
+        new_vmm_block->free_pages      = PAGE_TABLE_INDICES;
         new_vmm_block->high_water_mark = 0U;
 
         // get the last page in the current vmm block and allocate it as a page table for the next vmm block
@@ -198,7 +192,6 @@ uint8_t *vmm_alloc_page(void)
 
     if (!is_vmm_page_mapped)
     {
-        // TODO: delete the cast for page_table
         paging_populate_virtual_page(vmm_block->page_table, vmm_page);
     }
     else
@@ -208,9 +201,6 @@ uint8_t *vmm_alloc_page(void)
 
     return vmm_page;
 }
-
-// alloc continguous pages?
-// vmm_alloc_num_pages()
 
 // TODO: add more comments
 void vmm_free_page(uint8_t *page)
