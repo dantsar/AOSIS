@@ -66,14 +66,14 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
-
-    gdt_load_tss_asm();
-    // // test vmm expansion UUUNTESTED
+    // test vmm expansion UUUNTESTED
     // for (size_t i = 0; i < 1024; i++)
     // {
     //     uint8_t * block = vmm_alloc_page();
     //     *block = 1U;
     // }
+
+    gdt_load_tss_asm();
 
     // kprintf("[-] Initializing Scheduler...\n");
     // init_sched

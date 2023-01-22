@@ -32,8 +32,8 @@ struct vmm_block_desc
     size_t high_water_mark;           // the first unallocated index in page table (0-1023)
     size_t free_pages;                // number of available pages
 
-    uint8_t *first_page;           // the virtual address of the first page in the vmm block
-    struct page_table *page_table; // page table
+    uint8_t *first_page; // the virtual address of the first page in the vmm block
+    uint8_t *page_table; // page table
 
     struct vmm_block_desc *next_vmm_block;
 };
@@ -91,7 +91,7 @@ void vmm_init(uint8_t *initial_page_table)
     uint32_t first_free_virt_page = ((uint32_t)V2P_ADDR(initial_page_table) + PAGE_SIZE) / PAGE_SIZE;
 
     initial_vmm_block->first_page     = (uint8_t *)&kernel_base_addr_virt;
-    initial_vmm_block->page_table     = (struct page_table *)initial_page_table;
+    initial_vmm_block->page_table     = initial_page_table;
     initial_vmm_block->next_vmm_block = NULL;
 
     initial_vmm_block->high_water_mark = first_free_virt_page;
@@ -153,7 +153,8 @@ uint8_t *vmm_alloc_page(void)
 
     // TODO: I need to figure out the interaction for a kmalloc while allocating a new vmm block with 1022 and 1023
 
-    /* ************ THIS IS UNTESTED ************ */
+    /* ************ THIS IS UNTESTED AND HAS BUGS ************ */
+    /* TODO: PUT THIS IN A STATIC FUNCTION */
     // assume vmm page is an "available" page in the virtual address space (either free or needs to be allocated)
     static bool allocating_new_block = false;
     if (vmm_block->high_water_mark == HIGH_WATER_THRESHOLD && vmm_block->next_vmm_block == NULL && !allocating_new_block)
@@ -170,7 +171,7 @@ uint8_t *vmm_alloc_page(void)
 
         // get the last page in the current vmm block and allocate it as a page table for the next vmm block
         uint32_t index_in_bitmap = HIGH_WATER_THRESHOLD;
-        struct page_table *new_page_table = (struct page_table *)((uint32_t)vmm_block->first_page + (PAGE_SIZE * index_in_bitmap));
+        uint8_t *new_page_table = (uint8_t *)((uint32_t)vmm_block->first_page + (PAGE_SIZE * index_in_bitmap));
         memset(new_page_table, 0, PAGE_SIZE);
 
         new_vmm_block->page_table = new_page_table; // the sus imposter
@@ -181,16 +182,10 @@ uint8_t *vmm_alloc_page(void)
         vmm_block->next_vmm_block     = new_vmm_block;
 
         // I'm not sure that this in the right place, however, I'll figure that out later
+
         // allocate a physical page for the new page table
-        struct page_table_entry *pt_entry = &(vmm_block->page_table->entries[HIGH_WATER_THRESHOLD]);
-
-        uint8_t *phys_page = pmm_alloc_page();
-        paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
-
-        pt_entry->present = true;
-        pt_entry->r_w     = true;
-        pt_entry->present = true;
-
+        uint8_t *virtual_page = vmm_block->first_page + (PAGE_SIZE * HIGH_WATER_THRESHOLD);
+        uint8_t *phys_page    = paging_populate_virtual_page(vmm_block->page_table, virtual_page);
         paging_add_page_table(phys_page, new_vmm_block->first_page);
 
         allocating_new_block = false;
@@ -198,20 +193,13 @@ uint8_t *vmm_alloc_page(void)
 
     // if vmm_page != NULL ==> vmm_block != NULL
 
-    // this should be a separate function for checking and allocating a physical page to the virtual page
+    // TODO: Make this a static function
+    bool is_vmm_page_mapped = paging_is_virtual_page_present(vmm_block->page_table, vmm_page);
 
-    // Check if the virtual page is mapped in virtual memory
-    uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)vmm_page);
-    struct page_table_entry *pt_entry = &(vmm_block->page_table->entries[pt_index]);
-
-    if (!pt_entry->present)
+    if (!is_vmm_page_mapped)
     {
-        uint8_t *phys_page = pmm_alloc_page();
-        paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
-
-        pt_entry->present = true;
-        pt_entry->r_w     = true;
-        pt_entry->present = true;
+        // TODO: delete the cast for page_table
+        paging_populate_virtual_page(vmm_block->page_table, vmm_page);
     }
     else
     {
