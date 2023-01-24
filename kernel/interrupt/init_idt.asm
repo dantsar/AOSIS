@@ -1,7 +1,6 @@
 ; http://www.jamesmolloy.co.uk/tutorial_html/5.-IRQs%20and%20the%20PIT.html#:~:text=The%20PIT%20(theory),18.2Hz%20and%201.1931%20MHz).
 ; http://www.osdever.net/bkerndev/Docs/idt.htm
 
-[BITS 32]
 extern idtp
 extern isr_handler
 

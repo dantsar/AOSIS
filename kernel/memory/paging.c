@@ -22,7 +22,7 @@ struct page_directory_entry
 {
     uint32_t present : 1;           // If set, page is actually in physical memory
     uint32_t r_w : 1;               // Read-write permissions, set read/write, clear read-only
-    uint32_t user : 1;              // User/supervisor. set: user, clear: supervisor
+    uint32_t user : 1;              // User/supervisor. 0: usermode access are not allowed to the memory
     uint32_t write_through : 1;     // Page-level write-through
     uint32_t cache_disable : 1;     // Page-level cache disable
     uint32_t accessed : 1;          // Set if software has accessed the 4KB page
@@ -48,15 +48,15 @@ struct page_table_entry
     uint32_t phys_addr : 20;         // Physical address of the 4KB page
 } __attribute__((packed));
 
-struct __attribute__((aligned (4096))) page_directory
+struct page_directory
 {
     struct page_directory_entry entries[1024];
-};
+} __attribute__((aligned (4096)));
 
-struct __attribute__((aligned (4096))) page_table
+struct page_table
 {
     struct page_table_entry entries[1024];
-};
+} __attribute__((aligned (4096)));
 
 struct page_directory *kernel_page_directory; // TODO: make this static
 
@@ -193,19 +193,37 @@ bool paging_is_virtual_page_present(uint8_t *page_table_ptr, uint8_t *virt_page)
     return pt_entry->present;
 }
 
-uint8_t *paging_populate_virtual_page(uint8_t *page_table_ptr, uint8_t *virt_page)
+void *paging_map_virtual_page(void *page_table_ptr, void *virt_page)
 {
     uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
 
     struct page_table *page_table     = (struct page_table *)page_table_ptr;
     struct page_table_entry *pt_entry = &(page_table->entries[pt_index]);
 
-    uint8_t *phys_page = pmm_alloc_page();
+    void *phys_page = pmm_alloc_page();
     paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
 
     pt_entry->present = true;
     pt_entry->r_w     = true;
     pt_entry->present = true;
+
+    return phys_page;
+}
+
+void *paging_map_virtual_page_user(void *page_table_ptr, void *virt_page)
+{
+    uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
+
+    struct page_table *page_table     = (struct page_table *)page_table_ptr;
+    struct page_table_entry *pt_entry = &(page_table->entries[pt_index]);
+
+    void *phys_page = pmm_alloc_page();
+    paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
+
+    pt_entry->present = true;
+    pt_entry->r_w     = true;
+    pt_entry->present = true;
+    pt_entry->user    = true;
 
     return phys_page;
 }
@@ -217,28 +235,6 @@ void paging_copy_virtual_address_space(uint8_t *src, uint8_t * dest)
     struct page_directory *src_pd  = (struct page_directory *)src;
     struct page_directory *dest_pd = (struct page_directory *)dest;
 
-    // actually, I'll say that I say that copying an address spaces is a little more complicated that I think
-
-    /* TODO: delete this brain dump
-        for the kernel memory, I'll need to actually copy the same page table entries
-
-        however, for the userspace memory, I'll need to copy the physical pages byte-by-byte
-            - the Linux kernel optimizes this by implementing a copy on write, where is copies over the page table entires, however,
-              it marks them as read only
-              THEN, when a userspace process attempts to write to a page, a page fault is triggered and then the kernel ACTAULLY
-              copies over the memory to the new process
-              (the logic is that is smooths out the demand on the memory manager, and not all pages are going to be written to )
-    */
-
-   /*
-    however, on complication that I see is, how are the kernel pages going to be copied over, and what is the behavior overtime?
-
-    my main concern is that the virtual memory manager is going to expand the kernel accress space over time and that will not be reflected across
-    the high memory in all tasks, for that to be the case, the kernel will need to manually add the new page range to all tasks?
-
-    for the higher half memory, the kernel code never changes, however, changes to the kernel heap has to be consistent across all address spaces
-   */
-
     // loop through src_pd
     for (uint32_t i = 0; i < PAGE_TABLE_INDICES; i++)
     {
@@ -246,4 +242,3 @@ void paging_copy_virtual_address_space(uint8_t *src, uint8_t * dest)
     }
 
 }
-

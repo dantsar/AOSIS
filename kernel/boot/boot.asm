@@ -89,8 +89,10 @@ _start:
 .end:
 
 section .text
+
+[BITS 32]
 %include "interrupt/init_idt.asm"
-%include "boot/init_gdt.inc"
+%include "memory/init_gdt.asm"
 
 higher_half_kernel:
     ; update stack to virtual address

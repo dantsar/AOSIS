@@ -26,8 +26,8 @@ struct vmm_block_desc
     size_t high_water_mark;           // the first unallocated index in page table (0-1023)
     size_t free_pages;                // number of available pages
 
-    uint8_t *first_page; // the virtual address of the first page in the vmm block
-    uint8_t *page_table; // page table
+    void *first_page; // the virtual address of the first page in the vmm block
+    void *page_table; // page table
 
     struct vmm_block_desc *next_vmm_block;
 };
@@ -38,7 +38,7 @@ struct vmm_block_desc *vmm_block_list_tail = NULL;
 extern uint32_t kernel_base_addr_virt;
 
 // this can use some cleanup
-static uint32_t vmm_get_page_from_bitmap(uint32_t *bitmap, uint8_t *first_page, uint8_t **vmm_page)
+static uint32_t vmm_get_page_from_bitmap(uint32_t *bitmap, void *first_page, void **vmm_page)
 {
     uint32_t index_in_bitmap = 0;
 
@@ -60,7 +60,7 @@ static uint32_t vmm_get_page_from_bitmap(uint32_t *bitmap, uint8_t *first_page, 
             if (!CHECK_BIT_SET(page_bitmap, j))
             {
                 index_in_bitmap = (32U * i) + j;
-                *vmm_page = (uint8_t *)((uint32_t)first_page + (PAGE_SIZE * index_in_bitmap));
+                *vmm_page = (void *)((uint32_t)first_page + (PAGE_SIZE * index_in_bitmap));
 
                 // set bit in the bitmap
                 bitmap[i] = SET_BIT(page_bitmap, j);
@@ -106,10 +106,10 @@ void vmm_init(uint8_t *initial_page_table)
 }
 
 // TODO: add more comments
-uint8_t *vmm_alloc_page(void)
+void *vmm_alloc_page(void)
 {
     // loop throught the list and find an entry in the page range
-    uint8_t *vmm_page = NULL;
+    void *vmm_page = NULL;
 
     struct vmm_block_desc *vmm_block = vmm_block_list_head;
     while (vmm_block != NULL)
@@ -165,11 +165,11 @@ uint8_t *vmm_alloc_page(void)
 
         // get the last page in the current vmm block and allocate it as a page table for the next vmm block
         uint32_t index_in_bitmap = HIGH_WATER_THRESHOLD;
-        uint8_t *new_page_table = (uint8_t *)((uint32_t)vmm_block->first_page + (PAGE_SIZE * index_in_bitmap));
+        void *new_page_table = (void *)((uint32_t)vmm_block->first_page + (PAGE_SIZE * index_in_bitmap));
         memset(new_page_table, 0, PAGE_SIZE);
 
         new_vmm_block->page_table = new_page_table; // the sus imposter
-        new_vmm_block->first_page = (uint8_t *)((uint32_t)vmm_block->first_page + PAGE_RANGE);
+        new_vmm_block->first_page = (void *)((uint32_t)vmm_block->first_page + PAGE_RANGE);
 
         // append new vmm block to the list of vmm blocks
         new_vmm_block->next_vmm_block = NULL;
@@ -178,8 +178,8 @@ uint8_t *vmm_alloc_page(void)
         // I'm not sure that this in the right place, however, I'll figure that out later
 
         // allocate a physical page for the new page table
-        uint8_t *virtual_page = vmm_block->first_page + (PAGE_SIZE * HIGH_WATER_THRESHOLD);
-        uint8_t *phys_page    = paging_populate_virtual_page(vmm_block->page_table, virtual_page);
+        void *virtual_page = vmm_block->first_page + (PAGE_SIZE * HIGH_WATER_THRESHOLD);
+        void *phys_page    = paging_map_virtual_page(vmm_block->page_table, virtual_page);
         paging_add_page_table(phys_page, new_vmm_block->first_page);
 
         allocating_new_block = false;
@@ -192,7 +192,7 @@ uint8_t *vmm_alloc_page(void)
 
     if (!is_vmm_page_mapped)
     {
-        paging_populate_virtual_page(vmm_block->page_table, vmm_page);
+        paging_map_virtual_page(vmm_block->page_table, vmm_page);
     }
     else
     {
@@ -202,22 +202,24 @@ uint8_t *vmm_alloc_page(void)
     return vmm_page;
 }
 
-// TODO: add more comments
-void vmm_free_page(uint8_t *page)
+void vmm_free_page(void *page)
 {
-    uint32_t page_to_clear = PAGE_ALIGN((uint32_t)page);
+    uint32_t page_to_free = PAGE_ALIGN((uint32_t)page);
 
     struct vmm_block_desc *vmm_block = vmm_block_list_head;
 
-    bool page_freed = false;
+    bool page_freed = false; // flag used for escaping the nested for loops
     while (vmm_block != NULL && !page_freed)
     {
-        // if page in page table range
+        // In the list of vmm blocks, find the block that the page belongs to
+
+        // Calculate the range of the vmm block
         const uint32_t page_table_base_page = (uint32_t)vmm_block->first_page;
         const uint32_t page_table_last_page  = (uint32_t)vmm_block->first_page + PAGE_TABLE_RANGE - PAGE_SIZE;
 
-        if ((page_to_clear >= page_table_base_page) || (page_to_clear <= page_table_last_page))
+        if ((page_to_free >= page_table_base_page) || (page_to_free <= page_table_last_page))
         {
+            // Page in vmm block range
             uint32_t page_index    = V2P_ADDR((uint32_t)page) / PAGE_SIZE;
             uint32_t bitmap_index  = page_index / 32U;
             uint32_t bit_in_bitmap = page_index % 32U;
@@ -228,7 +230,7 @@ void vmm_free_page(uint8_t *page)
         }
         else
         {
-            // page not in vmm_block
+            // Page not in vmm block range
         }
 
         vmm_block = vmm_block->next_vmm_block;

@@ -13,7 +13,7 @@
 //
 // However, the tl;dr of the memomry management strategy is that a linked list of the free memory is kept.
 // Blocks (free memory portions) can be divided into smaller blocks when allocating and coalesced (merged)
-// the freeing used memory portions.
+// when freeing used memory portions.
 //
 // Each block has a header that describes the size of the memory, and a pointer to the next block, when
 // memory is allocated, the header is not passed to the "user"
@@ -30,11 +30,10 @@ struct memory_block
 struct memory_block *block_list_head = NULL;
 struct memory_block *block_list_tail = NULL;
 
+static uint32_t kmalloc_init_block[1024] __attribute__((aligned (4096))) = { 0 };
+
 static uint8_t *kmalloc_split_block(struct memory_block *block, size_t alloc_size);
 static void     kmalloc_coalesce(struct memory_block *prev_block, struct memory_block *new_block, struct memory_block *next_block);
-
-// TESTING AND VALIDATING KMALLOC
-uint32_t kmalloc_test[1024] __attribute__((aligned (4096))) = { 0 };
 
 
 // if a block is too large, divide the block and allocate the second block
@@ -83,15 +82,14 @@ static void kmalloc_coalesce(struct memory_block *prev_block,
     }
 }
 
-
 void kmalloc_init(void)
 {
     // set up the initial blocks
-    block_list_head = (struct memory_block *)kmalloc_test;
+    block_list_head = (struct memory_block *)kmalloc_init_block;
 
-    block_list_head->size        = sizeof(kmalloc_test);
+    block_list_head->size        = sizeof(kmalloc_init_block);
     block_list_head->next_block  = NULL;
-    block_list_head->free_memory = (uint8_t *)(BLOCK_HEADER_SIZE + (uint32_t)kmalloc_test);
+    block_list_head->free_memory = (uint8_t *)(BLOCK_HEADER_SIZE + (uint32_t)kmalloc_init_block);
 
     block_list_tail = block_list_head;
 }
@@ -158,15 +156,13 @@ void kfree(void *ptr)
         return;
     }
 
-    // the general logic for freeing an element,
-    // is that you increment the pointer to get the header
+    // the general logic for freeing an element,is that you increment the pointer to get the header
     // then check if you can coalesce the block to the right (next element in the free list) {pointer math}
     // then loop through the list to get the prev element, and check if you can coalesce to the left
 
     struct memory_block *new_block = (struct memory_block *)((uint32_t)ptr - BLOCK_HEADER_SIZE);
 
     // Necessary for coalesce, get the next and previous blocks of new_block
-
     struct memory_block *prev_block = NULL;
     struct memory_block *next_block = NULL;
 

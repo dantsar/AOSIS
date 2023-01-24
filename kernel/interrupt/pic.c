@@ -5,6 +5,7 @@
 #include <common/ports.h>
 #include <interrupt/pic.h>
 #include <interrupt/interrupt.h>
+#include <task/scheduler.h>
 #include <terminal/tty.h>
 
 extern idt_handler idt_handlers[256];
@@ -20,6 +21,8 @@ static void pic_callback() // registers_t regs
       tty_printint(tick);
       tty_putc('\n');
    }
+
+   scheduler();
 }
 
 uint32_t pic_get_tick(void)

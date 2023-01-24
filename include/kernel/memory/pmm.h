@@ -18,7 +18,7 @@ void pmm_init(struct multiboot_info *mbt);
 
 // allocate a new page (find the first one available)
 // return the physical address of the page
-uint8_t *pmm_alloc_page(void);
+void *pmm_alloc_page(void);
 
 // free page
-void pmm_free_page(uint8_t *page);
+void pmm_free_page(void *page);

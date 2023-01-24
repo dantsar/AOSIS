@@ -80,10 +80,10 @@ void pmm_init(struct multiboot_info *mbt)
 
 // find and allocate a page from the page pool,
 // return the physical address of the page
-uint8_t *pmm_alloc_page(void)
+void *pmm_alloc_page(void)
 {
     // Physical address of allocated page
-    uint8_t *alloc_page_addr = NULL;
+    void *alloc_page_addr = NULL;
 
     bool page_found = false; // flag used for escaping for loops
     for (uint32_t i = 0; i < (pmm.page_count / 32U) && !page_found; i++)
@@ -103,7 +103,7 @@ uint8_t *pmm_alloc_page(void)
             if (!CHECK_BIT_SET(page_bitmap, j))
             {
                 // get physical address of the allocated page
-                alloc_page_addr = (uint8_t *)((uint32_t)pmm.page_starting_addr + (PAGE_SIZE * (32U * i)) + (PAGE_SIZE * j));
+                alloc_page_addr = (void *)((uint32_t)pmm.page_starting_addr + (PAGE_SIZE * (32U * i)) + (PAGE_SIZE * j));
 
                 // set bit in the bitmap
                 pmm.page_frame_bitmap[i] = SET_BIT(page_bitmap, j);
@@ -121,7 +121,7 @@ uint8_t *pmm_alloc_page(void)
 }
 
 // free page by clearing corresponding bit in the bitmap
-void pmm_free_page(uint8_t *page)
+void pmm_free_page(void *page)
 {
     uint32_t page_to_clear = PAGE_ALIGN((uint32_t)page);
 

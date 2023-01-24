@@ -36,14 +36,15 @@ static struct shell_command commands[] = {
 };
 
 static char *amogus = \
-"   ###\n"
-"  ##--\n"
-"==##---\n"
-"==##---\n"
-"==#####\n"
-"==#####\n"
-"  ## ##\n"
-"  ## ##\n";
+"   ###            \n"
+"  ##--            \n"
+"==##---      $  ==\n"
+"==##---      $  ==\n"
+"==#####      $  ==\n"
+"==#####    #####==\n"
+"  ## ##    ## ##  \n"
+"  ## ##    ## ##  \n";
+
 
 static bool cmd_help()
 {
@@ -134,7 +135,6 @@ void kshell()
 
     for(;;) {
         halt();
-        scheduler(); // halt until an interrupt occurs
 
         key_t k;
         if (kb_get_key(&k) == false) {
