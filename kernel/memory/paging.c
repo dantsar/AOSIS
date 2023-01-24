@@ -12,53 +12,53 @@
 #include <memory/pmm.h>
 #include <terminal/tty.h>
 
-// #define PAGE_DIRECTORY_INDEX(addr) (((addr) >> 22U) & 0x3FFU)
-// #define PAGE_TABLE_INDEX(addr)     (((addr) >> 12U) & 0x3FFU)
+#define PAGE_DIRECTORY_INDEX(addr) (((addr) >> 22U) & 0x3FFU)
+#define PAGE_TABLE_INDEX(addr)     (((addr) >> 12U) & 0x3FFU)
 
 extern uint32_t kernel_start_addr_virt;
 
-// // 32-bit page directory entry that references a page table
-// struct page_directory_entry
-// {
-//     uint32_t present : 1;           // If set, page is actually in physical memory
-//     uint32_t r_w : 1;               // Read-write permissions, set read/write, clear read-only
-//     uint32_t user : 1;              // User/supervisor. set: user, clear: supervisor
-//     uint32_t write_through : 1;     // Page-level write-through
-//     uint32_t cache_disable : 1;     // Page-level cache disable
-//     uint32_t accessed : 1;          // Set if software has accessed the 4KB page
-//     uint32_t ignored : 1;           // Ignored bit
-//     uint32_t page_size : 1;         // Determines pages size, set to 0 if 4KB page
-//     uint32_t ignored_2 : 4;         // Ignored bits
-//     uint32_t phys_addr : 20;        //
-// };
+// 32-bit page directory entry that references a page table
+struct page_directory_entry
+{
+    uint32_t present : 1;           // If set, page is actually in physical memory
+    uint32_t r_w : 1;               // Read-write permissions, set read/write, clear read-only
+    uint32_t user : 1;              // User/supervisor. set: user, clear: supervisor
+    uint32_t write_through : 1;     // Page-level write-through
+    uint32_t cache_disable : 1;     // Page-level cache disable
+    uint32_t accessed : 1;          // Set if software has accessed the 4KB page
+    uint32_t ignored : 1;           // Ignored bit
+    uint32_t page_size : 1;         // Determines pages size, set to 0 if 4KB page
+    uint32_t ignored_2 : 4;         // Ignored bits
+    uint32_t phys_addr : 20;        // Physical address of the 4KB page
+} __attribute__((packed));
 
-// // 32-bit page table entry that maps a 4KB page
-// struct page_table_entry
-// {
-//     uint32_t present : 1;            // If set, page is actually in physical memory
-//     uint32_t r_w : 1;                // Read/write permissions of page. if set, page is read/write
-//     uint32_t user : 1;               // User bit. if set, page is accessible by all, else if not set, only accessible by the supervisor
-//     uint32_t write_through : 1;      // Page-level write-through
-//     uint32_t cache_disable : 1;      // Page-level cache disable
-//     uint32_t accessed : 1;           // et if software has accessed the 4KB page
-//     uint32_t dirty : 1;              // et if software has written to the 4KB page
-//     uint32_t pat_support : 1;        // If set, PAT is supported, otherwise reserved
-//     uint32_t global_translation : 1; // If set, determines whether the translation is global
-//     uint32_t ignored : 3;            // Ignored bits
-//     uint32_t phys_addr : 20;         // Physical address of the 4KB page
-// };
+// 32-bit page table entry that maps a 4KB page
+struct page_table_entry
+{
+    uint32_t present : 1;            // If set, page is actually in physical memory
+    uint32_t r_w : 1;                // Read/write permissions of page. if set, page is read/write
+    uint32_t user : 1;               // User bit. if set, page is accessible by all, else if not set, only accessible by the supervisor
+    uint32_t write_through : 1;      // Page-level write-through
+    uint32_t cache_disable : 1;      // Page-level cache disable
+    uint32_t accessed : 1;           // et if software has accessed the 4KB page
+    uint32_t dirty : 1;              // et if software has written to the 4KB page
+    uint32_t pat_support : 1;        // If set, PAT is supported, otherwise reserved
+    uint32_t global_translation : 1; // If set, determines whether the translation is global
+    uint32_t ignored : 3;            // Ignored bits
+    uint32_t phys_addr : 20;         // Physical address of the 4KB page
+} __attribute__((packed));
 
-// struct __attribute__((aligned (4096))) page_directory
-// {
-//     struct page_directory_entry entries[1024];
-// };
+struct __attribute__((aligned (4096))) page_directory
+{
+    struct page_directory_entry entries[1024];
+};
 
-// struct __attribute__((aligned (4096))) page_table
-// {
-//     struct page_table_entry entries[1024];
-// };
+struct __attribute__((aligned (4096))) page_table
+{
+    struct page_table_entry entries[1024];
+};
 
-static struct page_directory *kernel_page_directory;
+struct page_directory *kernel_page_directory; // TODO: make this static
 
 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr);
@@ -67,9 +67,12 @@ static void paging_flush_tlb();
 
 static void paging_page_fault_handler(registers_t regs);
 
-
-
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr)
+{
+    entry->phys_addr = (addr >> 12U);
+}
+
+static void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t addr)
 {
     entry->phys_addr = (addr >> 12U);
 }
@@ -136,14 +139,14 @@ uint8_t *paging_init()
     }
 
     // add the mapped page table to the page directory
-    struct page_directory_entry page_directory_entry = { 0 };
-    paging_set_page_directory_addr(&page_directory_entry, V2P_ADDR((uint32_t)&page_table->entries));
-    page_directory_entry.present = true;
-    page_directory_entry.r_w     = true;
+    struct page_directory_entry pd_entry = { 0 };
+    paging_set_page_directory_addr(&pd_entry, V2P_ADDR((uint32_t)&page_table->entries));
+    pd_entry.present = true;
+    pd_entry.r_w     = true;
 
     // add page table to the page directory
     uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)&kernel_start_addr_virt);
-    kernel_page_directory->entries[page_table_address] = page_directory_entry;
+    kernel_page_directory->entries[page_table_address] = pd_entry;
 
     // Configure the page fault handler
     idt_handlers[14] = paging_page_fault_handler;
@@ -164,7 +167,83 @@ uint8_t *paging_init()
     return (uint8_t *)page_table; // return the virtual address of the initial page table for vmm_init
 }
 
-void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t addr)
+void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
 {
-    entry->phys_addr = (addr >> 12U);
+    struct page_directory_entry pd_entry = { 0 };
+
+    paging_set_page_directory_addr(&pd_entry, (uint32_t)pt_phys_addr);
+    pd_entry.present = true;
+    pd_entry.r_w     = true;
+
+    uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)pt_virt_addr);
+    kernel_page_directory->entries[page_table_address] = pd_entry;
+
+    paging_flush_tlb();
 }
+
+bool paging_is_virtual_page_present(uint8_t *page_table_ptr, uint8_t *virt_page)
+{
+    // CHECK: is virt_page in page_table
+
+    uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
+
+    struct page_table *page_table     = (struct page_table *)page_table_ptr;
+    struct page_table_entry *pt_entry = &(page_table->entries[pt_index]);
+
+    return pt_entry->present;
+}
+
+uint8_t *paging_populate_virtual_page(uint8_t *page_table_ptr, uint8_t *virt_page)
+{
+    uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
+
+    struct page_table *page_table     = (struct page_table *)page_table_ptr;
+    struct page_table_entry *pt_entry = &(page_table->entries[pt_index]);
+
+    uint8_t *phys_page = pmm_alloc_page();
+    paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
+
+    pt_entry->present = true;
+    pt_entry->r_w     = true;
+    pt_entry->present = true;
+
+    return phys_page;
+}
+
+
+// void paging_copy_virtual_address_space(struct page_directory *src, struct page_directory * dest)
+void paging_copy_virtual_address_space(uint8_t *src, uint8_t * dest)
+{
+    struct page_directory *src_pd  = (struct page_directory *)src;
+    struct page_directory *dest_pd = (struct page_directory *)dest;
+
+    // actually, I'll say that I say that copying an address spaces is a little more complicated that I think
+
+    /* TODO: delete this brain dump
+        for the kernel memory, I'll need to actually copy the same page table entries
+
+        however, for the userspace memory, I'll need to copy the physical pages byte-by-byte
+            - the Linux kernel optimizes this by implementing a copy on write, where is copies over the page table entires, however,
+              it marks them as read only
+              THEN, when a userspace process attempts to write to a page, a page fault is triggered and then the kernel ACTAULLY
+              copies over the memory to the new process
+              (the logic is that is smooths out the demand on the memory manager, and not all pages are going to be written to )
+    */
+
+   /*
+    however, on complication that I see is, how are the kernel pages going to be copied over, and what is the behavior overtime?
+
+    my main concern is that the virtual memory manager is going to expand the kernel accress space over time and that will not be reflected across
+    the high memory in all tasks, for that to be the case, the kernel will need to manually add the new page range to all tasks?
+
+    for the higher half memory, the kernel code never changes, however, changes to the kernel heap has to be consistent across all address spaces
+   */
+
+    // loop through src_pd
+    for (uint32_t i = 0; i < PAGE_TABLE_INDICES; i++)
+    {
+        dest_pd->entries[i] = src_pd->entries[i];
+    }
+
+}
+

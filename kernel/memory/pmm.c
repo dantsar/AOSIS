@@ -2,14 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <common/common_macros.h>
 #include <kernel.h>
 #include <memory/pmm.h>
 #include <memory/multiboot.h>
 #include <terminal/tty.h>
-
-#define CHECK_BIT_SET(num, index) ((num) & (1U << (index)))
-#define SET_BIT(num, index)       ((num) | (1U << (index)))
-#define CLEAR_BIT(num, index)     ((num) & ~(1U << (index)))
 
 extern const uint8_t *kernel_end_addr_phys;
 extern const uint32_t kernel_size;

@@ -8,4 +8,4 @@ struct shell_command {
     bool (*cmd)();
 };
 
-void kconsole();
+void kshell();
