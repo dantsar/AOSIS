@@ -75,18 +75,18 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     //     *block = 1U;
     // }
 
-    kprintf("[-] Initializing Timer...\n");
-    pic_init(100, false);
-
     gdt_load_tss_asm();
-
-    task_init();
 
     kprintf("[-] Initializing Scheduler...\n");
     scheduler_init();
 
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
+
+    kprintf("[-] Initializing Timer...\n");
+    pic_init(2, false);
+
+    task_init();
 
     // Initialize Last
     kprintf("[-] Launching Kernel Console...\n");

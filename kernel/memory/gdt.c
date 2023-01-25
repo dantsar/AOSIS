@@ -3,6 +3,9 @@
 
 #include <memory/gdt.h>
 #include <memory/memory.h>
+#include <memory/pmm.h>
+
+extern uint32_t stack_top;
 
 struct tss {
     uint32_t back_link;
@@ -99,6 +102,7 @@ static struct gdt_entry gdt_create_entry(uint32_t segment_limit, // 20-bit value
     return gdt_entry;
 }
 
+uint32_t tss_stack[1024] __attribute__((aligned (4096)));
 uint32_t gdt_init()
 {
     // Entry 0 is never referenced by the processor and should be filled with 0
@@ -118,8 +122,8 @@ uint32_t gdt_init()
     gdt_descriptor.addr = (uint32_t)&global_descriptor_table;
 
     // TODO: setup ss0 and esp0 in the TSS
-    tss_region.esp0 = 0;
-    tss_region.ss0  = 0;
+    tss_region.esp0 = (uint32_t)tss_stack + PAGE_SIZE;
+    tss_region.ss0  = 0x10;
 
     return ((uint32_t)&gdt_descriptor);
 }

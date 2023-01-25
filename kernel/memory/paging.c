@@ -133,6 +133,7 @@ uint8_t *paging_init()
         entry.present = true;
         entry.r_w     = true;
 
+
         // map the kernel frames to the page table
         uint32_t page_table_index = PAGE_TABLE_INDEX(kernel_frame);
         page_table->entries[page_table_index] = entry;
@@ -147,6 +148,26 @@ uint8_t *paging_init()
     // add page table to the page directory
     uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)&kernel_start_addr_virt);
     kernel_page_directory->entries[page_table_address] = pd_entry;
+
+    /* **************  TODO: delete this kludge **************/
+    // // testing userspace here
+    struct page_table *userspace_page_table = (struct page_table *)P2V_ADDR(pmm_alloc_page());
+    for (uint32_t i = 0; i < 1024; i++)
+    {
+        userspace_page_table->entries[i]      = page_table->entries[i];
+        userspace_page_table->entries[i].user = true;
+    }
+
+    // add the mapped page table to the page directory
+
+    paging_set_page_directory_addr(&pd_entry, V2P_ADDR((uint32_t)&userspace_page_table->entries));
+    pd_entry.present = true;
+    pd_entry.r_w     = true;
+    pd_entry.user    = true;
+
+    // add page table to the page directory
+    kernel_page_directory->entries[0] = pd_entry;
+    /* ************** done testing userspace **************/
 
     // Configure the page fault handler
     idt_handlers[14] = paging_page_fault_handler;

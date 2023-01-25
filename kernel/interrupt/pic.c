@@ -15,14 +15,15 @@ static bool print = true;
 static uint32_t tick = 0;
 static void pic_callback() // registers_t regs
 {
-   tick++;
-   if (print) {
-      tty_printstr("Tick: ");
-      tty_printint(tick);
-      tty_putc('\n');
-   }
+    tick++;
+    if (print) {
+        tty_printstr("Tick: ");
+        tty_printint(tick);
+        tty_putc('\n');
+    }
 
-   scheduler();
+    kprintf("tic toc\n");
+    scheduler();
 }
 
 uint32_t pic_get_tick(void)

@@ -22,8 +22,9 @@ extern void task_switch_asm(struct task *next_thread);
 
 
 // ---------------- TESTING TASKS ----------------
-
 #include <interrupt/pic.h>
+
+extern void switch_to_usermode_asm(void);
 
 void task_test()
 {
@@ -48,17 +49,17 @@ void task_test()
 
 // need to add this to the page table
 void task_userspace() __attribute__((section (".multiboot.text")));
+uint32_t user_stack[1024]  __attribute((section (".multiboot.data"), aligned (4096)));
 
 void task_userspace(void)
 {
     while (1)
     {
-        asm volatile("cli");
+        // asm volatile("cli"); // This should trigger a General Protection Fault
     }
 }
 
 // ---------------- DONE TESTING TASKS ----------------
-
 
 
 // there has been a task running since bootup, and so, create and populate
@@ -78,26 +79,13 @@ void task_init()
     task_list_head = boot_task;
     task_list_tail = boot_task;
 
-    // populate the userspace task into the page table
-    void *user_page_table = vmm_alloc_page();   // the first 4MiB
 
 
-    // how was I planning on initializing the virtual address for the user task
-
-    // I'm going to need a way of getting the physical address from a virtual address
-
-    // so what do I want to do?
-
-    // the physical page for the function, I know from its function pointer
-    //
-
-    // void *user_function_page = vmm_alloc_page();
+    switch_to_usermode_asm();
 
 
-    // I need to add task_userspace to user_page_table
 
-    // kprintf("task_userspace: %x\n", task_userspace);
-
+    // OKAY, with the current kludges, I can just switch into the userspace task and die
 }
 
 struct task *task_create(void)
