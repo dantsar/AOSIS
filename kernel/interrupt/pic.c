@@ -22,7 +22,6 @@ static void pic_callback() // registers_t regs
         tty_putc('\n');
     }
 
-    kprintf("tic toc\n");
     scheduler();
 }
 

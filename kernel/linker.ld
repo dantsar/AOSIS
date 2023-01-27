@@ -40,9 +40,9 @@ SECTIONS
     {
         *(COMMON)
         *(.bss)
-
-        kernel_end_addr_virt = .;
-        kernel_end_addr_phys = . - kernel_base_addr_virt;
-        kernel_size = (kernel_end_addr_phys - kernel_start_addr_phys);
     }
+
+    kernel_end_addr_virt = .;
+    kernel_end_addr_phys = . - kernel_base_addr_virt;
+    kernel_size = (kernel_end_addr_phys - kernel_start_addr_phys);
 }

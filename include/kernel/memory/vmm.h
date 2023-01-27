@@ -1,6 +1,6 @@
 #pragma once
 
-void vmm_init(uint8_t *initial_page_table);
+void vmm_init(void *initial_page_table);
 
 void *vmm_alloc_page(void);
 

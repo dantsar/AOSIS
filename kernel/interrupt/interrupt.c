@@ -13,28 +13,28 @@ struct idt_desc idt[256]      = { 0 };
 idt_handler idt_handlers[256] = { 0 };
 
 const char *int_msgs[] = {
-    "Divide by Zero",
-    "Debug",
-    "Non-Maskable Interrupt",
-    "Breakpoint",
-    "Overflow",
-    "Bound Range Exceeded",
-    "Invalid Opcode",
-    "Device Not Available",
-    "Double Fault",
-    "CoProcessor Segment Overrun",
-    "Invalid TSS",
-    "Segment Not Present",
-    "Stack Segment Fault",
-    "General Protection Fault",
-    "Page Fault",
-    "Reserved",
-    "Floatint-Point Error",
-    "Alignment Check",
-    "Machine Check",
-    "SIMD Floating Pointe Exception",
-    "Virtualziation Exception",
-    "Control Protection Exception", // 21
+    "Divide by Zero",                  // 0
+    "Debug",                           // 1
+    "Non-Maskable Interrupt",          // 2
+    "Breakpoint",                      // 3
+    "Overflow",                        // 4
+    "Bound Range Exceeded",            // 5
+    "Invalid Opcode",                  // 6
+    "Device Not Available",            // 7
+    "Double Fault",                    // 8
+    "CoProcessor Segment Overrun",     // 9
+    "Invalid TSS",                     // 10
+    "Segment Not Present",             // 11
+    "Stack Segment Fault",             // 12
+    "General Protection Fault",        // 13
+    "Page Fault",                      // 14
+    "Reserved",                        // 15
+    "Floating-Point Error",            // 16
+    "Alignment Check",                 // 17
+    "Machine Check",                   // 18
+    "SIMD Floating Pointe Exception",  // 19
+    "Virtualziation Exception",        // 20
+    "Control Protection Exception",    // 21
     "Reserved", "Reserved","Reserved","Reserved","Reserved","Reserved",
     "Reserved","Reserved","Reserved","Reserved",
     /* IRQs Afterwards */

@@ -15,19 +15,17 @@
 
 #define VMM_BITMAP_SIZE (((PAGE_TABLE_RANGE / PAGE_SIZE) / (sizeof(uint32_t) * 8)))
 
-#define HIGH_WATER_THRESHOLD (1022)     // leave a buffer of two pages
-#define PAGE_RANGE           (1 << 22U) // addressable memory from a single page table
-
+#define HIGH_WATER_THRESHOLD (1022) // Leave a buffer of two pages
 
 struct vmm_block_desc
 {
-    uint32_t bitmap[VMM_BITMAP_SIZE]; // each bit is a page (4KiB)
+    uint32_t bitmap[VMM_BITMAP_SIZE]; // Each bit is a page (4KiB)
 
-    size_t high_water_mark;           // the first unallocated index in page table (0-1023)
-    size_t free_pages;                // number of available pages
+    size_t high_water_mark; // Index in the page table of the first unallocated page
+    size_t free_pages;      // Number of available pages
 
-    void *first_page; // the virtual address of the first page in the vmm block
-    void *page_table; // page table
+    void *first_page; // The virtual address of the first page in the vmm block
+    void *page_table; // Virtual address of the vmm block's page table
 
     struct vmm_block_desc *next_vmm_block;
 };
@@ -37,11 +35,14 @@ struct vmm_block_desc *vmm_block_list_tail = NULL;
 
 extern uint32_t kernel_base_addr_virt;
 
-// this can use some cleanup
-static uint32_t vmm_get_page_from_bitmap(uint32_t *bitmap, void *first_page, void **vmm_page)
-{
-    uint32_t index_in_bitmap = 0;
+// Find a free page in the page table, return the index of the page in the page table
+static bool vmm_get_page_from_bitmap(uint32_t *bitmap, uint32_t *index_in_bitmap);
 
+// Create a new page table to expand the virtual address space
+static void vmm_add_vmm_block(struct vmm_block_desc *vmm_block);
+
+static bool vmm_get_page_from_bitmap(uint32_t *bitmap, uint32_t *index_in_bitmap)
+{
     bool page_found = false;
     // Check if page is available in vmm block
     for (size_t i = 0; (i < VMM_BITMAP_SIZE) && !page_found; i++)
@@ -49,7 +50,7 @@ static uint32_t vmm_get_page_from_bitmap(uint32_t *bitmap, void *first_page, voi
         uint32_t page_bitmap = bitmap[i];
         if (page_bitmap == 0xFFFFFFFF)
         {
-            // skip because all the pages are allocated
+            // Skip because all the pages are allocated
             continue;
         }
 
@@ -59,44 +60,62 @@ static uint32_t vmm_get_page_from_bitmap(uint32_t *bitmap, void *first_page, voi
             // find first bit that is not set
             if (!CHECK_BIT_SET(page_bitmap, j))
             {
-                index_in_bitmap = (32U * i) + j;
-                *vmm_page = (void *)((uint32_t)first_page + (PAGE_SIZE * index_in_bitmap));
+                *index_in_bitmap = (32U * i) + j;
 
                 // set bit in the bitmap
                 bitmap[i] = SET_BIT(page_bitmap, j);
-
                 page_found = true;
             }
         }
     }
 
-    return index_in_bitmap;
+    return page_found;
 }
 
-// TODO: clean this up
-void vmm_init(uint8_t *initial_page_table)
+static void vmm_add_vmm_block(struct vmm_block_desc *vmm_block)
 {
-    // I'm assuming that no other page was allocated after the initial page table
-    // and that initial_page_table is 4KiB aligned
+    struct vmm_block_desc *new_vmm_block = (struct vmm_block_desc *)kmalloc(sizeof(struct vmm_block_desc));
+    memset(new_vmm_block, 0, sizeof(struct vmm_block_desc));
 
+    // Initialize the new vmm block descriptor
+    new_vmm_block->high_water_mark = 0;
+    new_vmm_block->free_pages      = PAGE_TABLE_INDICES;
+    new_vmm_block->next_vmm_block = NULL;
+
+    // Virtual address of the next vmm block's page table
+    new_vmm_block->page_table = (void *)((uint32_t)vmm_block->first_page + (HIGH_WATER_THRESHOLD * PAGE_SIZE));
+    new_vmm_block->first_page = (void *)((uint32_t)vmm_block->first_page + PAGE_TABLE_RANGE);
+
+    // Allocate the new page table
+    void *phys_addr = paging_map_virtual_page(vmm_block->page_table, new_vmm_block->page_table);
+    paging_add_page_table(phys_addr, new_vmm_block->first_page);
+
+    memset(new_vmm_block->page_table, 0, PAGE_SIZE); // clear the new page table
+
+    // Append new vmm block to the end of the list
+    vmm_block_list_tail->next_vmm_block = new_vmm_block;
+    vmm_block_list_tail = new_vmm_block;
+}
+
+void vmm_init(void *initial_page_table)
+{
     struct vmm_block_desc *initial_vmm_block = (struct vmm_block_desc *)kmalloc(sizeof(struct vmm_block_desc));
 
-    // TODO: think of a better name for this
-    uint32_t first_free_virt_page = ((uint32_t)V2P_ADDR(initial_page_table) + PAGE_SIZE) / PAGE_SIZE;
-
-    initial_vmm_block->first_page     = (uint8_t *)&kernel_base_addr_virt;
+    initial_vmm_block->first_page     = (void *)&kernel_base_addr_virt;
     initial_vmm_block->page_table     = initial_page_table;
     initial_vmm_block->next_vmm_block = NULL;
 
-    initial_vmm_block->high_water_mark = first_free_virt_page;
-    initial_vmm_block->free_pages = (1024 - first_free_virt_page); // TODO: hmmmmm, this is weird... double check this later
+    // Reserve pages for the kernel image
+    uint32_t first_free_page = ((uint32_t)V2P_ADDR(initial_page_table) + PAGE_SIZE) / PAGE_SIZE;
+    initial_vmm_block->high_water_mark = first_free_page;
+    initial_vmm_block->free_pages = (PAGE_TABLE_INDICES - first_free_page);
 
     // Set the bitmap
-    uint32_t last_fully_occupied_bitmap_index = (first_free_virt_page >> 5);
+    uint32_t last_fully_occupied_bitmap_index = (first_free_page >> 5);
     memset(initial_vmm_block->bitmap, (int)0xFF, (last_fully_occupied_bitmap_index * 4));
 
     // set the last bitmap index
-    uint32_t remaining_pages = (first_free_virt_page % 32);
+    uint32_t remaining_pages = (first_free_page % 32);
     uint32_t remaining_bits_to_set = ~(0xFFFFFFFF << remaining_pages);
     initial_vmm_block->bitmap[last_fully_occupied_bitmap_index] = remaining_bits_to_set;
 
@@ -105,7 +124,6 @@ void vmm_init(uint8_t *initial_page_table)
     vmm_block_list_tail = initial_vmm_block;
 }
 
-// TODO: add more comments
 void *vmm_alloc_page(void)
 {
     // loop throught the list and find an entry in the page range
@@ -120,15 +138,19 @@ void *vmm_alloc_page(void)
             continue;
         }
 
-        uint32_t index_in_bitmap = vmm_get_page_from_bitmap(vmm_block->bitmap, vmm_block->first_page, &vmm_page);
+        uint32_t index_in_bitmap = 0;
+        bool page_found = vmm_get_page_from_bitmap(vmm_block->bitmap, &index_in_bitmap);
 
-        if (vmm_page != NULL) // TODO: go over these if statements THE HIGH WATER MARK HERE IS BEING TREATED HERE AS THE LAST ALLOCATED PAGE BUT IT SHOULD BE THE FIRST UNALLOCATED PAGE TODO: FIIIIIIIIIIIIX
+        if (page_found)
         {
+            vmm_page = (void *)((uint32_t)vmm_block->first_page + (index_in_bitmap * PAGE_SIZE));
+
             vmm_block->free_pages--;
 
-            if (index_in_bitmap > vmm_block->high_water_mark)
+            uint32_t next_page = index_in_bitmap + 1;
+            if (next_page >= vmm_block->high_water_mark)
             {
-                vmm_block->high_water_mark = index_in_bitmap;
+                vmm_block->high_water_mark = next_page;
             }
 
             break;
@@ -139,55 +161,22 @@ void *vmm_alloc_page(void)
         }
     }
 
-    // I'm not convinced that this check does anything. It maybe that the pmm will panic before this occurs
     if (vmm_page == NULL)
     {
         panic("out of memory\n");
     }
 
-    // TODO: I need to figure out the interaction for a kmalloc while allocating a new vmm block with 1022 and 1023
+    static bool allocating_new_block = false; // Kludge because kmalloc might allocate a page while createing a new vmm block
 
-    /* ************ THIS IS UNTESTED AND HAS BUGS ************ */
-    /* TODO: PUT THIS IN A STATIC FUNCTION */
-    // assume vmm page is an "available" page in the virtual address space (either free or needs to be allocated)
-    static bool allocating_new_block = false;
-    if (vmm_block->high_water_mark == HIGH_WATER_THRESHOLD && vmm_block->next_vmm_block == NULL && !allocating_new_block)
+    if (vmm_block->high_water_mark == HIGH_WATER_THRESHOLD &&
+        vmm_block->next_vmm_block == NULL &&
+        !allocating_new_block)
     {
-        allocating_new_block = true; // potential infinite loop if kmalloc calls vmm_alloc_page, so add a flag for now
-
-        // INITIALIZE THE VMM_BLOCK DESCRIPTOR
-        // I'm allocating the last few pages for expanding the vmm block
-        struct vmm_block_desc *new_vmm_block = (struct vmm_block_desc *)kmalloc(sizeof(struct vmm_block_desc));
-        memset(new_vmm_block, 0U, sizeof(struct vmm_block_desc));
-
-        new_vmm_block->free_pages      = PAGE_TABLE_INDICES;
-        new_vmm_block->high_water_mark = 0U;
-
-        // get the last page in the current vmm block and allocate it as a page table for the next vmm block
-        uint32_t index_in_bitmap = HIGH_WATER_THRESHOLD;
-        void *new_page_table = (void *)((uint32_t)vmm_block->first_page + (PAGE_SIZE * index_in_bitmap));
-        memset(new_page_table, 0, PAGE_SIZE);
-
-        new_vmm_block->page_table = new_page_table; // the sus imposter
-        new_vmm_block->first_page = (void *)((uint32_t)vmm_block->first_page + PAGE_RANGE);
-
-        // append new vmm block to the list of vmm blocks
-        new_vmm_block->next_vmm_block = NULL;
-        vmm_block->next_vmm_block     = new_vmm_block;
-
-        // I'm not sure that this in the right place, however, I'll figure that out later
-
-        // allocate a physical page for the new page table
-        void *virtual_page = vmm_block->first_page + (PAGE_SIZE * HIGH_WATER_THRESHOLD);
-        void *phys_page    = paging_map_virtual_page(vmm_block->page_table, virtual_page);
-        paging_add_page_table(phys_page, new_vmm_block->first_page);
-
+        allocating_new_block = true;
+        vmm_add_vmm_block(vmm_block);
         allocating_new_block = false;
     }
 
-    // if vmm_page != NULL ==> vmm_block != NULL
-
-    // TODO: Make this a static function
     bool is_vmm_page_mapped = paging_is_virtual_page_present(vmm_block->page_table, vmm_page);
 
     if (!is_vmm_page_mapped)

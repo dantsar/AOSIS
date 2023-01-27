@@ -114,7 +114,7 @@ void *pmm_alloc_page(void)
 
     if (alloc_page_addr == NULL)
     {
-        panic("all pages are allocated\n");
+        kprintf("WARNING!!! All Physical pages are allocated\n");
     }
 
     return alloc_page_addr;

@@ -6,12 +6,12 @@
 #define PAGE_TABLE_INDICES (1024U)
 #define PAGE_TABLE_RANGE   (PAGE_TABLE_INDICES * PAGE_SIZE)
 
-uint8_t *paging_init();
+void *paging_init();
 
 // Insert the page table into the page directory
-void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr);
+void paging_add_page_table(void *pt_phys_addr, void *pt_virt_addr);
 
-bool paging_is_virtual_page_present(uint8_t *page_table_ptr, uint8_t *virt_page);
+bool paging_is_virtual_page_present(void *page_table_ptr, void *virt_page);
 
 // Map a virtual page to a physical page and add to page table
 // Returns the physcial address

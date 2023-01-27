@@ -94,7 +94,7 @@ static void paging_page_fault_handler(registers_t regs)
     panic("page fault occurred\n");
 }
 
-uint8_t *paging_init()
+void *paging_init()
 {
     // allocate a page directory
     kernel_page_directory = (struct page_directory *)P2V_ADDR(pmm_alloc_page());
@@ -185,10 +185,10 @@ uint8_t *paging_init()
 
     paging_flush_tlb();
 
-    return (uint8_t *)page_table; // return the virtual address of the initial page table for vmm_init
+    return (void *)page_table; // return the virtual address of the initial page table for vmm_init
 }
 
-void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
+void paging_add_page_table(void *pt_phys_addr, void *pt_virt_addr)
 {
     struct page_directory_entry pd_entry = { 0 };
 
@@ -202,10 +202,9 @@ void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
     paging_flush_tlb();
 }
 
-bool paging_is_virtual_page_present(uint8_t *page_table_ptr, uint8_t *virt_page)
+bool paging_is_virtual_page_present(void *page_table_ptr, void *virt_page)
 {
     // CHECK: is virt_page in page_table
-
     uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
 
     struct page_table *page_table     = (struct page_table *)page_table_ptr;
@@ -226,7 +225,6 @@ void *paging_map_virtual_page(void *page_table_ptr, void *virt_page)
 
     pt_entry->present = true;
     pt_entry->r_w     = true;
-    pt_entry->present = true;
 
     return phys_page;
 }
@@ -243,8 +241,9 @@ void *paging_map_virtual_page_user(void *page_table_ptr, void *virt_page)
 
     pt_entry->present = true;
     pt_entry->r_w     = true;
-    pt_entry->present = true;
     pt_entry->user    = true;
+
+    paging_flush_tlb();
 
     return phys_page;
 }

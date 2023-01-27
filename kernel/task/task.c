@@ -79,13 +79,7 @@ void task_init()
     task_list_head = boot_task;
     task_list_tail = boot_task;
 
-
-
     switch_to_usermode_asm();
-
-
-
-    // OKAY, with the current kludges, I can just switch into the userspace task and die
 }
 
 struct task *task_create(void)
@@ -93,13 +87,17 @@ struct task *task_create(void)
     // create the task and append to the task list tail
     struct task *new_task = (struct task *)kmalloc(sizeof(struct task));
 
-    new_task->pid               = task_list_tail->pid + 1;
-    new_task->next_task         = task_list_head;
-    new_task->page_directory    = (uint32_t)NULL; /* paging_clone_directory() create a new page directory */
+    new_task->next_task         = task_list_head; // Circular linked list
+    new_task->page_directory    = (uint32_t)NULL; /* TODO: paging_clone_directory() create a new page directory */
     new_task->kernel_stack_base = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
     new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base);
 
-    task_list_tail->next_task = new_task;
+    if (task_list_tail != NULL)
+    {
+        new_task->pid             = task_list_tail->pid + 1;
+        task_list_tail->next_task = new_task;
+    }
+
     task_list_tail            = new_task;
 
     return new_task;

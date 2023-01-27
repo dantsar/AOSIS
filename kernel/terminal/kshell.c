@@ -127,7 +127,7 @@ static void command_run(char *cmd, size_t len)
 
 void kshell()
 {
-    tty_printstr("Welcome to AOSIS: Run 'help' to get started!\n");
+    kprintf("\nWelcome to AOSIS: Run 'help' to get started!\n");
     command_start();
 
     char cmd[1024] = {0};

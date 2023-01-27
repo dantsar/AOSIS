@@ -40,7 +40,9 @@ void panic(const char *msg)
     }
 
     for(;;)
+    {
         cli();
+    }
 }
 
 void kmain(struct multiboot_info *mbt, uint32_t magic)
@@ -60,7 +62,7 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     pmm_init(mbt);
 
     kprintf("[-] Initializing Paging and Virtual Memory...\n");
-    uint8_t *initial_page_table = paging_init();
+    void *initial_page_table = paging_init();
 
     kprintf("[-] Initializing Heap...\n");
     kmalloc_init();
@@ -69,22 +71,22 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     vmm_init(initial_page_table);
 
     // // test vmm expansion UUUNTESTED
-    // for (size_t i = 0; i < 1024; i++)
+    // for (size_t i = 0; i < 4096 * 2; i++)
     // {
     //     uint8_t * block = vmm_alloc_page();
     //     *block = 1U;
     // }
 
-    gdt_load_tss_asm();
-
-    kprintf("[-] Initializing Scheduler...\n");
-    scheduler_init();
-
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
 
     kprintf("[-] Initializing Timer...\n");
-    pic_init(2, false);
+    pic_init(20, false);
+
+    gdt_load_tss_asm();
+
+    kprintf("[-] Initializing Scheduler...\n");
+    scheduler_init();
 
     task_init();
 
