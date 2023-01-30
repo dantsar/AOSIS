@@ -53,6 +53,8 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Interrupts...\n");
     interrupt_init();
 
+    struct multiboot_mod_list *mod_list = (struct multiboot_mod_list *)mbt->mods_addr;
+
     if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
         panic("invalid bootloader magic number");
     }

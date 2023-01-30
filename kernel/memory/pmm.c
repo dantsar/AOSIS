@@ -56,8 +56,6 @@ void pmm_init(struct multiboot_info *mbt)
         }
 	}
 
-    // populate physical_memory struct here with information
-
     // addr of the first page
     uint32_t first_page_addr = PAGE_ALIGN((uint32_t)&kernel_end_addr_phys);
     if (first_page_addr < (uint32_t)&kernel_end_addr_phys)
