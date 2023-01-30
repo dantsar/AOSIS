@@ -16,10 +16,11 @@ struct task *task_list_head;
 struct task *task_list_tail;
 
 
-extern uint32_t task_switch_init_stack_asm(uint32_t kernel_stack_base);
+extern uint32_t task_switch_init_stack_asm(uint32_t kernel_stack_base, uint32_t eip);
 
 extern void task_switch_asm(struct task *next_thread);
 
+static struct user_task_info user_task;
 
 // ---------------- TESTING TASKS ----------------
 #include <interrupt/pic.h>
@@ -82,7 +83,7 @@ void task_init()
     switch_to_usermode_asm();
 }
 
-struct task *task_create(void)
+void task_create(void)
 {
     // create the task and append to the task list tail
     struct task *new_task = (struct task *)kmalloc(sizeof(struct task));
@@ -90,7 +91,7 @@ struct task *task_create(void)
     new_task->next_task         = task_list_head; // Circular linked list
     new_task->page_directory    = (uint32_t)NULL; /* TODO: paging_clone_directory() create a new page directory */
     new_task->kernel_stack_base = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
-    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base);
+    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base, (uint32_t)task_test);
 
     if (task_list_tail != NULL)
     {
@@ -98,7 +99,40 @@ struct task *task_create(void)
         task_list_tail->next_task = new_task;
     }
 
-    task_list_tail            = new_task;
+    task_list_tail = new_task;
+}
 
-    return new_task;
+void task_create_user(void)
+{
+/*
+    SHIT TO DO:
+        * create a virtual address space for the user (sync all the kernel address spaces)
+            * it might be the move to just init the whole kernel address space (the whole 1GB)...
+*/
+    // create the task and append to the task list tail
+    struct task *new_task = (struct task *)kmalloc(sizeof(struct task));
+
+    new_task->next_task         = task_list_head; // Circular linked list
+    new_task->page_directory    = (uint32_t)NULL; /* TODO: paging_clone_directory() create a new page directory */
+    new_task->kernel_stack_base = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
+    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base); /* TAKE THE EIP AS AN ARGUMENT*/
+
+    if (task_list_tail != NULL)
+    {
+        new_task->pid             = task_list_tail->pid + 1;
+        task_list_tail->next_task = new_task;
+    }
+
+    task_list_tail = new_task;
+}
+
+void task_init_user_task_info(struct user_task_info user_task_info)
+{
+    static bool once = true;
+
+    if (once)
+    {
+        user_task = user_task_info;
+        once = false;
+    }
 }

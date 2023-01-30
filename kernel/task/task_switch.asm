@@ -4,7 +4,7 @@ extern current_task
 extern task_test
 
 ; C declaration:
-;   uint32_t task_switch_init_stack_asm(uint32_t kernel_stack_base);
+;   uint32_t task_switch_init_stack_asm(uint32_t kernel_stack_base, uint32_t eip);
 global task_switch_init_stack_asm
 task_switch_init_stack_asm:
     ; this is required to initialize the stack
@@ -12,8 +12,8 @@ task_switch_init_stack_asm:
     mov eax, [esp + 4] ; arg1: stack to initialize
 
     ; Push the address of the task's first address
-    mov ebx, task_test
-    mov [eax - 4], ebx
+    mov ebx, [esp + 8]
+    mov [eax - 4], ebx ; eip
 
     sub eax, 20 ; 4 (bytes) * (5 dummy values)
     ret

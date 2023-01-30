@@ -31,6 +31,19 @@ struct task
     struct task *next_task;
 };
 
+struct user_task_info
+{
+    uint32_t starting_eip;
+
+    uint32_t phys_addr_start;
+    uint32_t phys_addr_end;
+    uint32_t len;
+};
+
 void task_init(void);
 
-struct task *task_create(void);
+void task_create(void);
+
+void task_create_user(void);
+
+void task_init_user_task_info(struct user_task_info task);

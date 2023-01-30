@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stddef.h>
 
 #include <task/scheduler.h>
 #include <task/task.h>
@@ -24,5 +25,8 @@ void scheduler(void)
         return;
     }
 
-    task_switch_asm(current_task->next_task);
+    if (current_task != NULL && current_task->next_task != NULL)
+    {
+        task_switch_asm(current_task->next_task);
+    }
 }

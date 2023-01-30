@@ -121,7 +121,7 @@ uint32_t gdt_init()
     gdt_descriptor.size = (num_gdt_entires * sizeof(struct gdt_entry));
     gdt_descriptor.addr = (uint32_t)&global_descriptor_table;
 
-    // TODO: setup ss0 and esp0 in the TSS
+    // TODO: PROPERLY setup ss0 and esp0 in the TSS
     tss_region.esp0 = (uint32_t)tss_stack + PAGE_SIZE;
     tss_region.ss0  = 0x10;
 
