@@ -62,7 +62,6 @@ void task_userspace(void)
 
 // ---------------- DONE TESTING TASKS ----------------
 
-
 // there has been a task running since bootup, and so, create and populate
 // task struct for it
 void task_init()
@@ -115,7 +114,7 @@ void task_create_user(void)
     new_task->next_task         = task_list_head; // Circular linked list
     new_task->page_directory    = (uint32_t)NULL; /* TODO: paging_clone_directory() create a new page directory */
     new_task->kernel_stack_base = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
-    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base); /* TAKE THE EIP AS AN ARGUMENT*/
+    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base, user_task.starting_eip);
 
     if (task_list_tail != NULL)
     {

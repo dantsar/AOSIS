@@ -230,3 +230,38 @@ void vmm_free_page(void *page)
         panic("invalid page provided\n");
     }
 }
+
+uint32_t vmm_get_phys_addr(void *vmm_page)
+{
+    uint32_t phys_addr = 0;
+
+    struct vmm_block_desc *vmm_block = vmm_block_list_head;
+
+    while (vmm_block != NULL)
+    {
+        // Calculate the range of the vmm block
+        const void *page_table_base_page = (void *)vmm_block->first_page;
+        const void *page_table_last_page = (void *)vmm_block->first_page + PAGE_TABLE_RANGE - PAGE_SIZE;
+
+        if ((vmm_page >= page_table_base_page) || (vmm_page <= page_table_last_page))
+        {
+            // The vmm page is found in this block
+            uint32_t pt_index            = PAGE_TABLE_INDEX(vmm_page);
+            struct page_table *page_table = (struct page_table *)vmm_block->page_table;
+
+            struct page_table_entry pt_entry = page_table->entries[pt_index];
+            phys_addr = (pt_entry.phys_addr) << 12;
+
+            // found phys addr
+            break;
+        }
+        else
+        {
+            // Page not in vmm block range
+        }
+
+        vmm_block = vmm_block->next_vmm_block;
+    }
+
+    return phys_addr;
+}
