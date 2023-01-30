@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # export SYSTEM_PROJECTS="libc kernel/rust kernel"
-export SYSTEM_PROJECTS="libc kernel"
+export SYSTEM_PROJECTS="libc kernel user"
 
 export PROJ_NAME="aosis"
 export DIR_ROOT=`realpath .`
