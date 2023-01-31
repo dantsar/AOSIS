@@ -105,15 +105,15 @@ ISR_ERR 30
 ISR_ERR 31
 
 extern irq_handler
+extern task_update_trapframe
 
 ; This is our common IRQ stub. It saves the processor state, sets
 ; up for kernel mode segments, calls the C-level fault handler,
 ; and finally restores the stack frame.
 irq_common_stub:
-    pusha               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
+    pushad               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
 
-    mov ax, ds          ; Lower 16-bits of eax = ds.
-    push eax            ; save the data segment descriptor
+    push ds
 
     mov ax, GDT_DATA_SEG    ; load the kernel data segment descriptor
     mov ds, ax
@@ -121,15 +121,16 @@ irq_common_stub:
     mov fs, ax
     mov gs, ax
 
+    ; Save trapframe to the current task
+    push esp
+    call task_update_trapframe
+    pop eax
+
     call irq_handler
 
-    pop ebx             ; reload the original data segment descriptor
-    mov ds, bx
-    mov es, bx
-    mov fs, bx
-    mov gs, bx
+    pop ds
 
-    popa                ; Pops edi,esi,ebp...
+    popad               ; Pops eax,ecx,edx...
     add esp, 8          ; Cleans up the pushed error code and pushed ISR number
     sti
     iret                ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP

@@ -162,7 +162,7 @@ void tty_printint(uint32_t num)
 		return;
 	}
 
-	char s[32] = {0};
+	char s[32] = { 0 };
 
 	int i;
 	for (i = 0; num > 0; i++)

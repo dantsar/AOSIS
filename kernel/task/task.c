@@ -2,6 +2,7 @@
 
 #include <memory/kmalloc.h>
 #include <memory/memory.h>
+#include <memory/paging.h>
 #include <memory/pmm.h>
 #include <memory/vmm.h>
 #include <task/task.h>
@@ -17,15 +18,17 @@ struct task *task_list_tail;
 
 
 extern uint32_t task_switch_init_stack_asm(uint32_t kernel_stack_base, uint32_t eip);
+extern void task_switch_to_usermode_asm(uint32_t user_stack);
+extern uint32_t task_switch_init_user_stack_asm(uint32_t user_stack);
+
 
 extern void task_switch_asm(struct task *next_thread);
+extern void task_switch_to_usermode_asm(uint32_t user_stack);
 
 static struct user_task_info user_task;
 
 // ---------------- TESTING TASKS ----------------
 #include <interrupt/pic.h>
-
-extern void switch_to_usermode_asm(void);
 
 void task_test()
 {
@@ -50,15 +53,7 @@ void task_test()
 
 // need to add this to the page table
 void task_userspace() __attribute__((section (".multiboot.text")));
-uint32_t user_stack[1024]  __attribute((section (".multiboot.data"), aligned (4096)));
-
-void task_userspace(void)
-{
-    while (1)
-    {
-        // asm volatile("cli"); // This should trigger a General Protection Fault
-    }
-}
+uint32_t user_stack[1024]  __attribute((section (".multiboot.data"), aligned (4096))) = { 0 };
 
 // ---------------- DONE TESTING TASKS ----------------
 
@@ -68,18 +63,23 @@ void task_init()
 {
     struct task *boot_task = (struct task *)kmalloc(sizeof(struct task));
 
-    boot_task->pid               = 0U;
-    boot_task->next_task         = boot_task; // circular list
-    boot_task->kernel_stack_base = P2V_ADDR(stack_top);
-    boot_task->page_directory    = (uint32_t)kernel_page_directory;
+    boot_task->pid                 = 0U;
+    boot_task->next_task           = boot_task; // circular list
+    boot_task->page_directory_phys = (uint32_t)kernel_page_directory; // TODO: fix this so it's actually the physical address
 
     // Boot task's stack does not need to be initialized.
 
     current_task = boot_task;
     task_list_head = boot_task;
     task_list_tail = boot_task;
+}
 
-    switch_to_usermode_asm();
+void task_update_trapframe(struct trapframe *tf)
+{
+    if (current_task != NULL)
+    {
+        current_task->trapframe = tf;
+    }
 }
 
 void task_create(void)
@@ -87,10 +87,10 @@ void task_create(void)
     // create the task and append to the task list tail
     struct task *new_task = (struct task *)kmalloc(sizeof(struct task));
 
-    new_task->next_task         = task_list_head; // Circular linked list
-    new_task->page_directory    = (uint32_t)NULL; /* TODO: paging_clone_directory() create a new page directory */
-    new_task->kernel_stack_base = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
-    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base, (uint32_t)task_test);
+    new_task->next_task           = task_list_head; // Circular linked list
+    new_task->page_directory_phys = (uint32_t)kernel_page_directory; // TODO: figure out if this is right...
+    new_task->kernel_stack_base   = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
+    new_task->kernel_stack_top    = task_switch_init_stack_asm(new_task->kernel_stack_base, (uint32_t)task_test);
 
     if (task_list_tail != NULL)
     {
@@ -103,18 +103,14 @@ void task_create(void)
 
 void task_create_user(void)
 {
-/*
-    SHIT TO DO:
-        * create a virtual address space for the user (sync all the kernel address spaces)
-            * it might be the move to just init the whole kernel address space (the whole 1GB)...
-*/
     // create the task and append to the task list tail
     struct task *new_task = (struct task *)kmalloc(sizeof(struct task));
 
-    new_task->next_task         = task_list_head; // Circular linked list
-    new_task->page_directory    = (uint32_t)NULL; /* TODO: paging_clone_directory() create a new page directory */
-    new_task->kernel_stack_base = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
-    new_task->kernel_stack_top  = task_switch_init_stack_asm(new_task->kernel_stack_base, user_task.starting_eip);
+    new_task->next_task           = task_list_head; // Circular linked list
+    new_task->page_directory_phys = paging_create_userspace(&user_task);
+    new_task->kernel_stack_base   = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
+    new_task->kernel_stack_top    = task_switch_init_stack_asm(new_task->kernel_stack_base, user_task.starting_eip);
+    new_task->is_user             = true;
 
     if (task_list_tail != NULL)
     {

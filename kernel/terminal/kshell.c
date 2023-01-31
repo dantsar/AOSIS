@@ -38,7 +38,7 @@ static struct shell_command commands[] = {
 static char *amogus = \
 "   ###            \n"
 "  ##--            \n"
-"==##---      $  ==\n"
+"==##---         ==\n"
 "==##---      $  ==\n"
 "==#####      $  ==\n"
 "==#####    #####==\n"

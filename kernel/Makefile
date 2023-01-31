@@ -4,30 +4,30 @@ LINKER_LD 	:= 	linker.ld
 CFLAGS		:=	$(CFLAGS) -I../include/kernel -I../include/libc -L../build \
 				-ffreestanding -Wall -Wextra -std=gnu11 -nostdlib -nostartfiles -lgcc -ggdb
 
-KERNEL_SOURCE       :=  kernel.o                \
-                        boot/boot.o             \
-                        terminal/vga.o          \
-                        interrupt/interrupt.o   \
-                        interrupt/keyboard.o    \
-                        interrupt/pic.o         \
-                        div_zero.o              \
-                        branch_nowhere.o        \
-                        common/ringbuff.o       \
-                        common/ports.o          \
-                        common/cpu.o            \
-                        memory/gdt.o			\
-                        memory/kmalloc.o		\
-                        memory/pmm.o            \
-                        memory/vmm.o			\
-                        memory/paging.o			\
-                        task/task.o				\
-                        task/scheduler.o		\
-                        task/task_switch.o		\
-                        task/usermode.o			\
-                        terminal/tty.o          \
-                        terminal/kshell.o       \
-                        libk.a                  \
-                        # rust/librust.a		\
+KERNEL_SOURCE       :=  kernel.o                	\
+                        boot/boot.o             	\
+                        terminal/vga.o          	\
+                        interrupt/interrupt.o   	\
+                        interrupt/keyboard.o    	\
+                        interrupt/pic.o         	\
+                        div_zero.o              	\
+                        branch_nowhere.o        	\
+                        common/ringbuff.o       	\
+                        common/ports.o          	\
+                        common/cpu.o            	\
+                        memory/gdt.o				\
+                        memory/kmalloc.o			\
+                        memory/pmm.o            	\
+                        memory/vmm.o				\
+                        memory/paging.o				\
+                        task/task.o					\
+                        task/scheduler.o			\
+                        task/task_switch.o			\
+                        task/task_switch_usermode.o	\
+                        terminal/tty.o          	\
+                        terminal/kshell.o       	\
+                        libk.a                  	\
+                        # rust/librust.a			\
 
 AOSIS_BIN 		:= ../build/aosis.bin
 

@@ -53,7 +53,7 @@ int idt_set_entry(uint8_t index, uint32_t handler, uint16_t sel, uint8_t flags)
     return 0;
 }
 
-void isr_handler(registers_t regs)
+void isr_handler(struct idt_registers regs)
 {
     // TO DO: check for certain interrupts
     static unsigned prev_int = -1;
@@ -78,7 +78,7 @@ void isr_handler(registers_t regs)
     }
 }
 
-void irq_handler(registers_t regs)
+void irq_handler(struct idt_registers regs)
 {
     // if (regs.int_no != 32) {
     //     tty_printstr("IRQ handler\n");
@@ -103,7 +103,7 @@ void irq_handler(registers_t regs)
     }
 }
 
-void other_interrupt(registers_t regs) {
+void other_interrupt(struct idt_registers regs) {
     tty_printstr("???SOMEOTHER INTERRUPT???\n");
     tty_printint(regs.int_no);
 }

@@ -18,7 +18,7 @@ section .bss
 ; allocate stack
 global stack_top
 
-align 16
+align 4096
 stack_bottom:
 resb 4096 ; 4 KiB
 stack_top:

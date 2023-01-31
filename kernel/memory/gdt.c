@@ -79,7 +79,7 @@ struct gdt_pointer
 static struct gdt_entry   global_descriptor_table[64] = { 0 };
 static struct gdt_pointer gdt_descriptor              = { 0 };
 
-static struct tss tss_region = { 0 };
+struct tss tss_region = { 0 };
 
 
 static struct gdt_entry gdt_create_entry(uint32_t segment_limit, // 20-bit value
@@ -102,7 +102,6 @@ static struct gdt_entry gdt_create_entry(uint32_t segment_limit, // 20-bit value
     return gdt_entry;
 }
 
-uint32_t tss_stack[1024] __attribute__((aligned (4096)));
 uint32_t gdt_init()
 {
     // Entry 0 is never referenced by the processor and should be filled with 0
@@ -121,9 +120,12 @@ uint32_t gdt_init()
     gdt_descriptor.size = (num_gdt_entires * sizeof(struct gdt_entry));
     gdt_descriptor.addr = (uint32_t)&global_descriptor_table;
 
-    // TODO: PROPERLY setup ss0 and esp0 in the TSS
-    tss_region.esp0 = (uint32_t)tss_stack + PAGE_SIZE;
-    tss_region.ss0  = 0x10;
+    tss_region.ss0  = GDT_DATA_SEG;
 
     return ((uint32_t)&gdt_descriptor);
+}
+
+void gdt_update_tss(uint32_t user_kernel_stack)
+{
+    tss_region.esp0 = user_kernel_stack;
 }

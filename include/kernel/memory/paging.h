@@ -67,4 +67,4 @@ void *paging_map_virtual_page(void *page_table_ptr, void *virt_page);
 
 void *paging_map_virtual_page_user(void *page_table_ptr, void *virt_page);
 
-void paging_create_userspace(struct user_task_info *user_task);
+uint32_t paging_create_userspace(struct user_task_info *user_task);

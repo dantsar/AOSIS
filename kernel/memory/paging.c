@@ -22,7 +22,7 @@ static void paging_set_page_directory_addr(struct page_directory_entry *entry, u
 
 static void paging_flush_tlb();
 
-static void paging_page_fault_handler(registers_t regs);
+static void paging_page_fault_handler(struct idt_registers regs);
 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr)
 {
@@ -40,7 +40,7 @@ static void paging_flush_tlb()
     asm volatile("movl %eax, %cr3");
 }
 
-static void paging_page_fault_handler(registers_t regs)
+static void paging_page_fault_handler(struct idt_registers regs)
 {
     UNUSED(regs);
     uint32_t faulting_address;
@@ -186,6 +186,7 @@ void *paging_map_virtual_page(void *page_table_ptr, void *virt_page)
     return phys_page;
 }
 
+// TODO: delete this
 void *paging_map_virtual_page_user(void *page_table_ptr, void *virt_page)
 {
     uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
@@ -206,14 +207,10 @@ void *paging_map_virtual_page_user(void *page_table_ptr, void *virt_page)
 }
 
 // I need to copy/link the kernel address space into the new page directory
-void paging_copy_virtual_address_space(struct user_task_info *user_task)
+uint32_t paging_create_userspace(struct user_task_info *user_task)
 {
     struct page_directory *new_userspace = (struct page_directory *)vmm_alloc_page();
-
-    if (new_userspace == NULL)
-    {
-        panic("Cannot allocate new user page directory\n");
-    }
+    uint32_t user_page_directory_addr = vmm_get_phys_addr((void *)new_userspace);
 
     // copy the current kernel page directory
     for (uint32_t i = PAGE_DIRECTORY_INDEX(KERNEL_VIRT_BASE); i < PAGE_TABLE_INDICES; i++)
@@ -221,16 +218,67 @@ void paging_copy_virtual_address_space(struct user_task_info *user_task)
         new_userspace->entries[i] = kernel_page_directory->entries[i];
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////
+
     // create a new page &&/|| page table for the actual user program
+    struct page_table *user_program_pt = (struct page_table *)vmm_alloc_page();
+    uint32_t user_prog_pt_addr         = vmm_get_phys_addr((void *)user_program_pt);
 
+    struct page_table_entry prog_pt_entry = {
+        .present   = true,
+        .r_w       = true,
+        .user      = true,
+    };
+    paging_set_page_table_addr(&prog_pt_entry, user_task->phys_addr_start);
 
+    prog_pt_entry.phys_addr = user_task->phys_addr_start;
 
-    // create a page &&/|| page table for the user stack (starting from KERNEL_VIRT_BASE - 1 since it grows down)
+    // User program believes that it's loaded at address = 0
+    user_program_pt->entries[0] = prog_pt_entry;
 
-    /*
-        THIS IS PRETTY BAD, BUT ONE OF THE CURRENT REALLY BAD BUGS THAT I HAVE IS THAT THE FIRST 4MiB OF PHYSICAL MEMORY
-        IS IDENTITY MAPPED TO THE "FIRST" 4MiB OF THE KERNEL'S VIRTUAL ADDRESS SPACE
-    */
+    struct page_directory_entry prog_pd_entry = {
+        .present = true,
+        .r_w     = true,
+        .user    = true,
+    };
+    paging_set_page_directory_addr(&prog_pd_entry, user_prog_pt_addr);
 
+    // User program believes that it's loaded at address = 0
+    new_userspace->entries[0] = prog_pd_entry;
 
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    // Allocate memory for the stack
+    uint32_t stack_address              = (KERNEL_VIRT_BASE - PAGE_SIZE);
+    uint32_t stack_page_directory_index = PAGE_DIRECTORY_INDEX(stack_address);
+    uint32_t stack_page_table_index     = PAGE_TABLE_INDEX(stack_address);
+
+    struct page_table *user_stack_pt = (struct page_table *)vmm_alloc_page();
+    uint32_t user_stack_pt_addr      = vmm_get_phys_addr((void *)user_stack_pt);
+
+    struct page_table_entry stack_pt_entry = {
+        .present   = true,
+        .r_w       = true,
+        .user      = true,
+    };
+    paging_set_page_table_addr(&stack_pt_entry, user_task->phys_addr_start);
+
+    stack_pt_entry.phys_addr = user_task->phys_addr_start;
+
+    // User program believes that it's loaded at address = 0
+    user_stack_pt->entries[stack_page_table_index] = stack_pt_entry;
+
+    struct page_directory_entry stack_pd_entry = {
+        .present = true,
+        .r_w     = true,
+        .user    = true,
+    };
+    paging_set_page_directory_addr(&stack_pd_entry, user_stack_pt_addr);
+
+    // stack will be place at the very top of the user's memory
+    new_userspace->entries[stack_page_directory_index] = stack_pd_entry;
+
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    return user_page_directory_addr;
 }

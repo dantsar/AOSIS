@@ -29,6 +29,11 @@
 // // Rust test
 // extern uint32_t add_nums(uint32_t n1, uint32_t n2);
 
+
+extern uint32_t task_switch_init_user_stack_asm(uint32_t user_stack);
+
+extern void task_switch_to_usermode_asm(uint32_t user_stack);
+
 extern void gdt_load_tss_asm(void);
 
 void panic(const char *msg)
@@ -73,17 +78,23 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
 
-    kprintf("[-] Initializing Timer...\n");
-    pic_init(20, false);
+    uint32_t timer_frequency = 20;
+    kprintf("[-] Initializing Timer (Freq: %dHz)...\n", timer_frequency);
+    pic_init(timer_frequency, false);
 
     gdt_load_tss_asm();
+
+    // Testing task creation
+    task_init();
+
+    task_create();
+
+    task_create_user();
 
     kprintf("[-] Initializing Scheduler...\n");
     scheduler_init();
 
-    // Testing task creation
-    // task_create_user();
-    // task_init();
+    // task_switch_to_usermode_asm(0);
 
     // Initialize Last
     kprintf("[-] Launching Kernel Console...\n");
