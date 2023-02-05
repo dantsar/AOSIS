@@ -7,7 +7,6 @@
 #include <interrupt/interrupt.h>
 #include <interrupt/keyboard.h>
 #include <interrupt/keyboard_lut.h>
-#include <common/ringbuff.h>
 #include <terminal/tty.h>
 
 struct keyboard keyboard = {
