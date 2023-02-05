@@ -66,20 +66,20 @@ typedef struct keyboard_state {
     unsigned esc     : 1;
 } kb_state_t;
 
-typedef struct key {
+struct key {
     kb_state_t state;
     keycode_t key;
-} key_t;
+};
 
-typedef struct keyboard {
-    key_t buff[4096];
+struct keyboard {
+    struct key buff[4096];
     size_t len;
     size_t head, tail;
-} keyboard_t;
+};
 
 // the global keyboard state
-extern keyboard_t keyboard;
+extern struct keyboard keyboard;
 
 void keyboard_init();
 
-bool kb_get_key(key_t *key);
+bool kb_get_key(struct key *key);

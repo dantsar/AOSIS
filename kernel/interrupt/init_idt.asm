@@ -61,8 +61,7 @@ isr_common_stub:
     jmp isr_common_stub         ; Go to our common handler code.
 %endmacro
 
-; This macro creates a stub for an ISR which passes it's own
-; error code.
+; This macro creates a stub for an ISR which passes it's own error code.
 %macro ISR_REG 1
   global isr%1
   isr%1:

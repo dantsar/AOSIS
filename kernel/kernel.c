@@ -75,6 +75,19 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
+    gdt_load_tss_asm();
+
+    task_init();
+
+    // Testing task creation
+    // task_create();
+    // task_create_user();
+
+    kprintf("[-] Initializing Scheduler...\n");
+    scheduler_init();
+
+    // task_switch_to_usermode_asm(0);
+
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
 
@@ -82,20 +95,7 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Timer (Freq: %dHz)...\n", timer_frequency);
     pic_init(timer_frequency, false);
 
-    gdt_load_tss_asm();
-
-    // Testing task creation
-    task_init();
-
-    task_create();
-
-    task_create_user();
-
-    kprintf("[-] Initializing Scheduler...\n");
-    scheduler_init();
-
-    // task_switch_to_usermode_asm(0);
-
+    // TODO: Make kshell a task!!! AND make boot_task the idle task...
     // Initialize Last
     kprintf("[-] Launching Kernel Console...\n");
     kshell();
