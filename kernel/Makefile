@@ -22,7 +22,6 @@ KERNEL_SOURCE       :=  kernel.o                	\
                         task/task.o					\
                         task/scheduler.o			\
                         task/task_switch.o			\
-                        task/task_switch_usermode.o	\
                         terminal/tty.o          	\
                         terminal/kshell.o       	\
                         libk.a                  	\

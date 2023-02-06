@@ -17,13 +17,13 @@ struct task
     // These MUST maintain order because of assembly code assumptions
     uint32_t kernel_stack_top; // kind of useless
     struct trapframe *trapframe;
+    uint32_t page_directory_phys;
 
     // The following struct elements can be in any order
     uint32_t pid;
     bool is_user;
 
     void *page_directory_virt;
-    uint32_t page_directory_phys;
 
     uint32_t kernel_stack_base;
     uint32_t user_stack;
@@ -74,7 +74,7 @@ void task_init(void);
 
 void task_update_trapframe(struct trapframe *tf);
 
-void task_create(void);
+void task_create_kernel(void);
 
 void task_create_user(void);
 

@@ -32,8 +32,6 @@
 
 extern uint32_t task_switch_init_user_stack_asm(uint32_t user_stack);
 
-extern void task_switch_to_usermode_asm(uint32_t user_stack);
-
 extern void gdt_load_tss_asm(void);
 
 void panic(const char *msg)
@@ -75,18 +73,18 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
-    // gdt_load_tss_asm(); // I don't need this for now...
+    gdt_load_tss_asm();
 
     task_init();
 
     // Testing task creation
-    task_create();
-    // task_create_user();
+    task_create_kernel();
+    task_create_user();
 
     kprintf("[-] Initializing Scheduler...\n");
     scheduler_init();
 
-    // task_switch_to_usermode_asm(0);
+    paging_add_temp_userspace(); // KLUDGE TODO: DELETE!
 
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
