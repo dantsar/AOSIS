@@ -82,29 +82,29 @@ static void pmm_init_user_task(uint32_t mods_count, void *mod_list)
 
 void pmm_init(struct multiboot_info *mbt)
 {
-	// check the sixth bit of the flags to see if grub provided a valid memory map
-	if (!((mbt->flags >> 6) & 0x01)) {
-		panic("invalid GRUB memory map");
-	}
+    // check the sixth bit of the flags to see if grub provided a valid memory map
+    if (!((mbt->flags >> 6) & 0x01)) {
+        panic("invalid GRUB memory map");
+    }
 
-	void *last_mem_addr;
-	for (size_t i = 0; i < mbt->mmap_length; i += sizeof(multiboot_memory_map_t))
+    void *last_mem_addr;
+    for (size_t i = 0; i < mbt->mmap_length; i += sizeof(multiboot_memory_map_t))
     {
         multiboot_memory_map_t *entry = (multiboot_memory_map_t *) (mbt->mmap_addr + i);
 
         // only use available memory regions
-		if (entry->type == MULTIBOOT_MEMORY_AVAILABLE)
+        if (entry->type == MULTIBOOT_MEMORY_AVAILABLE)
         {
-			pmm.total_memory = entry->len_low;
+            pmm.total_memory = entry->len_low;
 
-			// last memory address
-			last_mem_addr = (void *) (entry->addr_low + entry->len_low);
-		}
+            // last memory address
+            last_mem_addr = (void *) (entry->addr_low + entry->len_low);
+        }
         else
         {
             // skip memory regions
         }
-	}
+    }
 
     pmm_init_struct(last_mem_addr);
 

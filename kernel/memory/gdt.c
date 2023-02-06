@@ -120,7 +120,7 @@ uint32_t gdt_init()
     gdt_descriptor.size = (num_gdt_entires * sizeof(struct gdt_entry));
     gdt_descriptor.addr = (uint32_t)&global_descriptor_table;
 
-    tss_region.ss0  = GDT_DATA_SEG;
+    tss_region.ss0  = GDT_KERNEL_DATA_SEG;
 
     return ((uint32_t)&gdt_descriptor);
 }

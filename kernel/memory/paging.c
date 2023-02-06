@@ -48,7 +48,7 @@ static void paging_page_fault_handler(struct idt_registers regs)
 
     kprintf("page fault occurred\n");
     kprintf("faulting address: %x\n", faulting_address);
-    panic("page fault occurred\n");
+    // panic("page fault occurred\n");
 }
 
 void *paging_init()

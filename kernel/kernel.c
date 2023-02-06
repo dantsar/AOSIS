@@ -75,12 +75,12 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
-    gdt_load_tss_asm();
+    // gdt_load_tss_asm(); // I don't need this for now...
 
     task_init();
 
     // Testing task creation
-    // task_create();
+    task_create();
     // task_create_user();
 
     kprintf("[-] Initializing Scheduler...\n");

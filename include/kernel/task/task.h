@@ -11,11 +11,12 @@ enum task_state
     STOPPED
 };
 
+// TODO: clean up the data member, some of these don't belong...
 struct task
 {
     // These MUST maintain order because of assembly code assumptions
-    uint32_t kernel_stack_top;
-    uint32_t user_stack_top;
+    uint32_t kernel_stack_top; // kind of useless
+    struct trapframe *trapframe;
 
     // The following struct elements can be in any order
     uint32_t pid;
@@ -23,10 +24,10 @@ struct task
 
     void *page_directory_virt;
     uint32_t page_directory_phys;
-    struct trapframe *trapframe;
 
     uint32_t kernel_stack_base;
     uint32_t user_stack;
+    uint32_t user_stack_top;
 
     struct task *next_task;
 };
@@ -49,7 +50,7 @@ struct trapframe
     uint32_t edi;
     uint32_t esi;
     uint32_t ebp;
-    uint32_t un_esp; // unused esp
+    uint32_t bs_esp; // this register is ignored by popad
     uint32_t ebx;
     uint32_t edx;
     uint32_t ecx;

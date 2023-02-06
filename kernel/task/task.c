@@ -1,5 +1,8 @@
 #include <stdint.h>
 
+#include <string.h>
+
+#include <memory/gdt.h>
 #include <memory/kmalloc.h>
 #include <memory/memory.h>
 #include <memory/paging.h>
@@ -37,17 +40,17 @@ void task_test()
     while (1)
     {
         uint32_t tick = pic_get_tick();
-        if (tick >= (previous_tick + 20)) // ~5 seconds since tick rate is 20/sec
+        if (tick >= (previous_tick + 2)) // ~5 seconds since tick rate is 20/sec
         {
             previous_tick = tick;
 
-            // kprintf("Task_test: %d (SWITCHING TASK)\n", tick);
+            kprintf("Task_test: %d (SWITCHING TASK)\n", tick);
 
             // do something here and print to the screen
         }
 
         // kprintf("Task_test ticked");
-        scheduler();
+        // scheduler();
     }
 }
 
@@ -69,7 +72,7 @@ void task_init()
 
     // Boot task's stack does not need to be initialized.
 
-    current_task = boot_task;
+    current_task   = boot_task;
     task_list_head = boot_task;
     task_list_tail = boot_task;
 }
@@ -82,15 +85,28 @@ void task_update_trapframe(struct trapframe *tf)
     }
 }
 
-void task_create(void)
+// create kernel task!!!
+void task_create(void) // TODO: as an argument, take the address to the stating function
 {
     // create the task and append to the task list tail
     struct task *new_task = (struct task *)kmalloc(sizeof(struct task));
 
     new_task->next_task           = task_list_head; // Circular linked list
     new_task->page_directory_phys = (uint32_t)kernel_page_directory; // TODO: figure out if this is right...
+
     new_task->kernel_stack_base   = ((uint32_t)vmm_alloc_page() + PAGE_SIZE);
-    new_task->kernel_stack_top    = task_switch_init_stack_asm(new_task->kernel_stack_base, (uint32_t)task_test);
+    memset((void *)(new_task->kernel_stack_base - PAGE_SIZE), 0, PAGE_SIZE);  // clear starting stack
+
+    new_task->trapframe = (struct trapframe *)(new_task->kernel_stack_base - (sizeof(struct trapframe))); // -8 because there are no user elements
+
+    // Set the initial trapframe
+    new_task->trapframe->eip    = (uint32_t)&task_test;
+    new_task->trapframe->eflags = 0x2U;
+    new_task->trapframe->cs     = GDT_KERNEL_CODE_SEG;
+    new_task->trapframe->ds     = GDT_KERNEL_DATA_SEG;
+    // new_task->trapframe->ss     = GDT_KERNEL_DATA_SEG;
+    // new_task->trapframe->esp    = new_task->kernel_stack_base;
+
 
     if (task_list_tail != NULL)
     {

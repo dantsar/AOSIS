@@ -31,23 +31,25 @@ void scheduler(void)
         return;
     }
 
-    // // I'm not sure about this, the trapframe should already be created by this point
-    // if (current_task->is_user)
+    task_switch_asm(current_task->next_task);
+
+    // // // I'm not sure about this, the trapframe should already be created by this point
+    // // if (current_task->is_user)
+    // // {
+    // //     // current_task->user_stack_top = tss_region->esp
+    // // }
+
+    // struct task *next_task = current_task->next_task;
+
+    // if (!next_task->is_user)
     // {
-    //     // current_task->user_stack_top = tss_region->esp
+    //     // task_switch_asm(next_task);
     // }
-
-    struct task *next_task = current_task->next_task;
-
-    if (!next_task->is_user)
-    {
-        task_switch_asm(next_task);
-    }
-    else
-    {
-        // TODO: change the tss esp0 to the user process' kernel stack
-        gdt_update_tss(next_task->kernel_stack_base); // NOTE: the kernel stack is always empty when returning to userspace
-        task_switch_to_usermode_asm(0U); /* trapframe */ // the argument doesn't make any sense TODO: fix
-        return;
-    }
+    // else
+    // {
+    //     // TODO: change the tss esp0 to the user process' kernel stack
+    //     // gdt_update_tss(next_task->kernel_stack_base); // NOTE: the kernel stack is always empty when returning to userspace
+    //     // task_switch_to_usermode_asm(0U); /* trapframe */ // the argument doesn't make any sense TODO: fix
+    //     return;
+    // }
 }

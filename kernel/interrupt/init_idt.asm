@@ -2,6 +2,8 @@
 ; http://www.osdever.net/bkerndev/Docs/idt.htm
 
 extern idtp
+extern task_update_trapframe
+
 extern isr_handler
 
 global load_idt_asm
@@ -12,17 +14,18 @@ load_idt_asm:
 global isr_common_stub
 isr_common_stub:
     pushad               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
-
     push ds
-    push es
-    push fs
-    push gs
 
-    mov ax, GDT_DATA_SEG    ; load the kernel data segment descriptor
+    mov ax, GDT_KERNEL_DATA_SEG    ; load the kernel data segment descriptor
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+
+    ; Save trapframe to the current task
+    push esp
+    call task_update_trapframe
+    pop eax
 
     call isr_handler    ; extern isr_handler: can be found in interrupt.c
 
@@ -32,17 +35,12 @@ isr_common_stub:
     mov fs, bx
     mov gs, bx
 
-    popad               ; Pops edi,esi,ebp,esp,ebx,edx,ecx,eax
-
-    pop gs
-    pop fs
-    pop es
     pop ds
-
+    popad               ; Pops edi,esi,ebp,esp,ebx,edx,ecx,eax
     add esp, 8          ; Cleans up the pushed error code and pushed ISR number
+
     sti
     iret                ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
-
 
 ; the ISRs prepare the environment for the handler by saving the processor stat
 ; setting up kernel mode segments, and then calls the C-level fault handler
@@ -104,17 +102,15 @@ ISR_ERR 30
 ISR_ERR 31
 
 extern irq_handler
-extern task_update_trapframe
 
 ; This is our common IRQ stub. It saves the processor state, sets
 ; up for kernel mode segments, calls the C-level fault handler,
 ; and finally restores the stack frame.
 irq_common_stub:
     pushad               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
-
     push ds
 
-    mov ax, GDT_DATA_SEG    ; load the kernel data segment descriptor
+    mov ax, GDT_KERNEL_DATA_SEG    ; load the kernel data segment descriptor
     mov ds, ax
     mov es, ax
     mov fs, ax
@@ -128,11 +124,12 @@ irq_common_stub:
     call irq_handler
 
     pop ds
-
     popad               ; Pops eax,ecx,edx...
     add esp, 8          ; Cleans up the pushed error code and pushed ISR number
+
     sti
     iret                ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
+
 ; This macro creates a stub for an IRQ - the first parameter is
 ; the IRQ number, the second is the ISR number it is remapped to.
 %macro IRQ 2
