@@ -29,6 +29,9 @@
 // // Rust test
 // extern uint32_t add_nums(uint32_t n1, uint32_t n2);
 
+
+extern uint32_t task_switch_init_user_stack_asm(uint32_t user_stack);
+
 extern void gdt_load_tss_asm(void);
 
 void panic(const char *msg)
@@ -40,7 +43,9 @@ void panic(const char *msg)
     }
 
     for(;;)
+    {
         cli();
+    }
 }
 
 void kmain(struct multiboot_info *mbt, uint32_t magic)
@@ -60,7 +65,7 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     pmm_init(mbt);
 
     kprintf("[-] Initializing Paging and Virtual Memory...\n");
-    uint8_t *initial_page_table = paging_init();
+    void *initial_page_table = paging_init();
 
     kprintf("[-] Initializing Heap...\n");
     kmalloc_init();
@@ -68,26 +73,27 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
-    // // test vmm expansion UUUNTESTED
-    // for (size_t i = 0; i < 1024; i++)
-    // {
-    //     uint8_t * block = vmm_alloc_page();
-    //     *block = 1U;
-    // }
-
-    kprintf("[-] Initializing Timer...\n");
-    pic_init(100, false);
-
     gdt_load_tss_asm();
 
     task_init();
 
+    // Testing task creation
+    task_create_kernel();
+    task_create_user();
+
     kprintf("[-] Initializing Scheduler...\n");
     scheduler_init();
+
+    paging_add_temp_userspace(); // KLUDGE TODO: DELETE!
 
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
 
+    uint32_t timer_frequency = 20;
+    kprintf("[-] Initializing Timer (Freq: %dHz)...\n", timer_frequency);
+    pic_init(timer_frequency, false);
+
+    // TODO: Make kshell a task!!! AND make boot_task the idle task...
     // Initialize Last
     kprintf("[-] Launching Kernel Console...\n");
     kshell();

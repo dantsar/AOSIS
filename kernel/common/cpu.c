@@ -5,7 +5,12 @@ void cli()
     asm volatile("cli");
 }
 
-void halt() 
+void sti()
+{
+    asm volatile("sti");
+}
+
+void halt()
 {
     asm volatile("hlt");
     return;

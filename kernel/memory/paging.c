@@ -10,62 +10,17 @@
 #include <memory/memory.h>
 #include <memory/paging.h>
 #include <memory/pmm.h>
+#include <memory/vmm.h>
 #include <terminal/tty.h>
 
-#define PAGE_DIRECTORY_INDEX(addr) (((addr) >> 22U) & 0x3FFU)
-#define PAGE_TABLE_INDEX(addr)     (((addr) >> 12U) & 0x3FFU)
-
 extern uint32_t kernel_start_addr_virt;
-
-// 32-bit page directory entry that references a page table
-struct page_directory_entry
-{
-    uint32_t present : 1;           // If set, page is actually in physical memory
-    uint32_t r_w : 1;               // Read-write permissions, set read/write, clear read-only
-    uint32_t user : 1;              // User/supervisor. set: user, clear: supervisor
-    uint32_t write_through : 1;     // Page-level write-through
-    uint32_t cache_disable : 1;     // Page-level cache disable
-    uint32_t accessed : 1;          // Set if software has accessed the 4KB page
-    uint32_t ignored : 1;           // Ignored bit
-    uint32_t page_size : 1;         // Determines pages size, set to 0 if 4KB page
-    uint32_t ignored_2 : 4;         // Ignored bits
-    uint32_t phys_addr : 20;        // Physical address of the 4KB page
-} __attribute__((packed));
-
-// 32-bit page table entry that maps a 4KB page
-struct page_table_entry
-{
-    uint32_t present : 1;            // If set, page is actually in physical memory
-    uint32_t r_w : 1;                // Read/write permissions of page. if set, page is read/write
-    uint32_t user : 1;               // User bit. if set, page is accessible by all, else if not set, only accessible by the supervisor
-    uint32_t write_through : 1;      // Page-level write-through
-    uint32_t cache_disable : 1;      // Page-level cache disable
-    uint32_t accessed : 1;           // et if software has accessed the 4KB page
-    uint32_t dirty : 1;              // et if software has written to the 4KB page
-    uint32_t pat_support : 1;        // If set, PAT is supported, otherwise reserved
-    uint32_t global_translation : 1; // If set, determines whether the translation is global
-    uint32_t ignored : 3;            // Ignored bits
-    uint32_t phys_addr : 20;         // Physical address of the 4KB page
-} __attribute__((packed));
-
-struct __attribute__((aligned (4096))) page_directory
-{
-    struct page_directory_entry entries[1024];
-};
-
-struct __attribute__((aligned (4096))) page_table
-{
-    struct page_table_entry entries[1024];
-};
 
 struct page_directory *kernel_page_directory; // TODO: make this static
 
 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr);
 
-static void paging_flush_tlb();
-
-static void paging_page_fault_handler(registers_t regs);
+static void paging_page_fault_handler(struct idt_registers regs);
 
 static void paging_set_page_directory_addr(struct page_directory_entry *entry, uint32_t addr)
 {
@@ -77,13 +32,7 @@ static void paging_set_page_table_addr(struct page_table_entry *entry, uint32_t 
     entry->phys_addr = (addr >> 12U);
 }
 
-static void paging_flush_tlb()
-{
-    asm volatile("movl %cr3,%eax");
-    asm volatile("movl %eax, %cr3");
-}
-
-static void paging_page_fault_handler(registers_t regs)
+static void paging_page_fault_handler(struct idt_registers regs)
 {
     UNUSED(regs);
     uint32_t faulting_address;
@@ -94,7 +43,7 @@ static void paging_page_fault_handler(registers_t regs)
     panic("page fault occurred\n");
 }
 
-uint8_t *paging_init()
+void *paging_init()
 {
     // allocate a page directory
     kernel_page_directory = (struct page_directory *)P2V_ADDR(pmm_alloc_page());
@@ -132,6 +81,7 @@ uint8_t *paging_init()
         paging_set_page_table_addr(&entry, PAGE_ALIGN(kernel_frame));
         entry.present = true;
         entry.r_w     = true;
+        entry.global_translation = true;
 
         // map the kernel frames to the page table
         uint32_t page_table_index = PAGE_TABLE_INDEX(kernel_frame);
@@ -143,31 +93,29 @@ uint8_t *paging_init()
     paging_set_page_directory_addr(&pd_entry, V2P_ADDR((uint32_t)&page_table->entries));
     pd_entry.present = true;
     pd_entry.r_w     = true;
+    pd_entry.global_translation = true;
 
     // add page table to the page directory
-    uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)&kernel_start_addr_virt);
+    uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX(&kernel_start_addr_virt);
     kernel_page_directory->entries[page_table_address] = pd_entry;
 
     // Configure the page fault handler
     idt_handlers[14] = paging_page_fault_handler;
 
+    // Set the page directory
     uint32_t kernel_page_directory_addr = V2P_ADDR((uint32_t)(&kernel_page_directory->entries));
+    paging_change_page_directory(kernel_page_directory_addr);
 
-    // load page table into cr3
-    asm volatile("mov %0, %%cr3":: "r"(kernel_page_directory_addr));
-
-    // enable paging by setting bit 31 in cr0
-    uint32_t cr0;
-    asm volatile("mov %%cr0, %0": "=r"(cr0));
-    cr0 |= 0x80000000;
-    asm volatile("mov %0, %%cr0":: "r"(cr0));
-
-    paging_flush_tlb();
-
-    return (uint8_t *)page_table; // return the virtual address of the initial page table for vmm_init
+    return (void *)page_table; // return the virtual address of the initial page table for vmm_init
 }
 
-void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
+void paging_flush_tlb()
+{
+    asm volatile("movl %cr3,%eax");
+    asm volatile("movl %eax, %cr3");
+}
+
+void paging_add_page_table(void *pt_phys_addr, void *pt_virt_addr)
 {
     struct page_directory_entry pd_entry = { 0 };
 
@@ -175,16 +123,15 @@ void paging_add_page_table(uint8_t *pt_phys_addr, uint8_t *pt_virt_addr)
     pd_entry.present = true;
     pd_entry.r_w     = true;
 
-    uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX((uint32_t)pt_virt_addr);
+    uint32_t page_table_address                        = PAGE_DIRECTORY_INDEX(pt_virt_addr);
     kernel_page_directory->entries[page_table_address] = pd_entry;
 
     paging_flush_tlb();
 }
 
-bool paging_is_virtual_page_present(uint8_t *page_table_ptr, uint8_t *virt_page)
+bool paging_is_virtual_page_present(void *page_table_ptr, void *virt_page)
 {
     // CHECK: is virt_page in page_table
-
     uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
 
     struct page_table *page_table     = (struct page_table *)page_table_ptr;
@@ -193,57 +140,176 @@ bool paging_is_virtual_page_present(uint8_t *page_table_ptr, uint8_t *virt_page)
     return pt_entry->present;
 }
 
-uint8_t *paging_populate_virtual_page(uint8_t *page_table_ptr, uint8_t *virt_page)
+void *paging_map_virtual_page(void *page_table_ptr, void *virt_page)
 {
     uint32_t pt_index = PAGE_TABLE_INDEX((uint32_t)virt_page);
 
     struct page_table *page_table     = (struct page_table *)page_table_ptr;
     struct page_table_entry *pt_entry = &(page_table->entries[pt_index]);
 
-    uint8_t *phys_page = pmm_alloc_page();
+    void *phys_page = pmm_alloc_page();
     paging_set_page_table_addr(pt_entry, (uint32_t)phys_page);
 
     pt_entry->present = true;
     pt_entry->r_w     = true;
-    pt_entry->present = true;
 
     return phys_page;
 }
 
-
-// void paging_copy_virtual_address_space(struct page_directory *src, struct page_directory * dest)
-void paging_copy_virtual_address_space(uint8_t *src, uint8_t * dest)
+// I need to copy/link the kernel address space into the new page directory
+// hmmmm, ... TODO: comeback to this function
+uint32_t paging_create_userspace(struct user_task_info *user_task)
 {
-    struct page_directory *src_pd  = (struct page_directory *)src;
-    struct page_directory *dest_pd = (struct page_directory *)dest;
+    struct page_directory *new_userspace = (struct page_directory *)vmm_alloc_page();
+    uint32_t user_page_directory_addr = vmm_get_phys_addr((void *)new_userspace);
 
-    // actually, I'll say that I say that copying an address spaces is a little more complicated that I think
-
-    /* TODO: delete this brain dump
-        for the kernel memory, I'll need to actually copy the same page table entries
-
-        however, for the userspace memory, I'll need to copy the physical pages byte-by-byte
-            - the Linux kernel optimizes this by implementing a copy on write, where is copies over the page table entires, however,
-              it marks them as read only
-              THEN, when a userspace process attempts to write to a page, a page fault is triggered and then the kernel ACTAULLY
-              copies over the memory to the new process
-              (the logic is that is smooths out the demand on the memory manager, and not all pages are going to be written to )
-    */
-
-   /*
-    however, on complication that I see is, how are the kernel pages going to be copied over, and what is the behavior overtime?
-
-    my main concern is that the virtual memory manager is going to expand the kernel accress space over time and that will not be reflected across
-    the high memory in all tasks, for that to be the case, the kernel will need to manually add the new page range to all tasks?
-
-    for the higher half memory, the kernel code never changes, however, changes to the kernel heap has to be consistent across all address spaces
-   */
-
-    // loop through src_pd
-    for (uint32_t i = 0; i < PAGE_TABLE_INDICES; i++)
+    // copy the current kernel page directory
+    for (uint32_t i = PAGE_DIRECTORY_INDEX(KERNEL_VIRT_BASE); i < PAGE_TABLE_INDICES; i++)
     {
-        dest_pd->entries[i] = src_pd->entries[i];
+        new_userspace->entries[i] = kernel_page_directory->entries[i];
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    // create a new page &&/|| page table for the actual user program
+    struct page_table *user_program_pt = (struct page_table *)vmm_alloc_page();
+    uint32_t user_prog_pt_addr         = vmm_get_phys_addr((void *)user_program_pt);
+
+    struct page_table_entry prog_pt_entry = {
+        .present   = true,
+        .r_w       = true,
+        .user      = true,
+    };
+    paging_set_page_table_addr(&prog_pt_entry, user_task->phys_addr_start);
+
+
+    // User program believes that it's loaded at address = 0
+    user_program_pt->entries[0] = prog_pt_entry;
+
+    struct page_directory_entry prog_pd_entry = {
+        .present = true,
+        .r_w     = true,
+        .user    = true,
+    };
+    paging_set_page_directory_addr(&prog_pd_entry, user_prog_pt_addr);
+
+    // User program believes that it's loaded at address = 0
+    new_userspace->entries[0] = prog_pd_entry;
+
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    // Allocate memory for the stack
+    uint32_t stack_address_base         = (KERNEL_VIRT_BASE - PAGE_SIZE);
+    uint32_t stack_page_directory_index = PAGE_DIRECTORY_INDEX(stack_address_base);
+    uint32_t stack_page_table_index     = PAGE_TABLE_INDEX(stack_address_base);
+
+    struct page_table *user_stack_pt = (struct page_table *)vmm_alloc_page();
+    uint32_t user_stack_pt_addr      = vmm_get_phys_addr((void *)user_stack_pt);
+
+    struct page_table_entry stack_pt_entry = {
+        .present   = true,
+        .r_w       = true,
+        .user      = true,
+    };
+    paging_set_page_table_addr(&stack_pt_entry, user_task->phys_addr_start);
+
+    // User program believes that it's loaded at address = 0
+    user_stack_pt->entries[stack_page_table_index] = stack_pt_entry;
+
+    struct page_directory_entry stack_pd_entry = {
+        .present = true,
+        .r_w     = true,
+        .user    = true,
+    };
+    paging_set_page_directory_addr(&stack_pd_entry, user_stack_pt_addr);
+
+    // stack will be place at the very top of the user's memory
+    new_userspace->entries[stack_page_directory_index] = stack_pd_entry;
+
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    return user_page_directory_addr;
 }
 
+void paging_change_page_directory(uint32_t page_directory_phys)
+{
+    // load page table into cr3
+    asm volatile("mov %0, %%cr3":: "r"(page_directory_phys));
+
+    // enable paging by setting bit 31 in cr0
+    uint32_t cr0;
+    asm volatile("mov %%cr0, %0": "=r"(cr0));
+    cr0 |= 0x80000000;
+    asm volatile("mov %0, %%cr0":: "r"(cr0));
+
+    paging_flush_tlb();
+}
+
+void paging_add_temp_userspace(void)
+{
+    /* **************  TODO: delete this kludge **************/
+    // // testing userspace here
+    struct page_table *userspace_page_table = (struct page_table *)vmm_alloc_page();
+    for (uint32_t i = 0; i < 1024; i++)
+    {
+        struct page_table_entry entry = { 0 };
+        paging_set_page_table_addr(&entry, (i * PAGE_SIZE));
+        entry.present = true;
+        entry.r_w     = true;
+        entry.user    = true;
+        entry.global_translation = true;
+
+        userspace_page_table->entries[i] = entry;
+    }
+
+    // add the mapped page table to the page directory
+    struct page_directory_entry user_pd_entry = { 0 };
+
+    uint32_t phys_userspace_page_table = vmm_get_phys_addr(userspace_page_table);
+    paging_set_page_directory_addr(&user_pd_entry, phys_userspace_page_table);
+    user_pd_entry.present = true;
+    user_pd_entry.r_w     = true;
+    user_pd_entry.user    = true;
+    user_pd_entry.global_translation = true;
+
+    // add page table to the page directory
+    kernel_page_directory->entries[0] = user_pd_entry;
+    /* ************** done testing userspace **************/
+
+
+
+    // Allocate memory for the stack
+    uint32_t stack_address_base         = (KERNEL_VIRT_BASE - PAGE_SIZE);
+    uint32_t stack_page_directory_index = PAGE_DIRECTORY_INDEX(stack_address_base);
+    uint32_t stack_page_table_index     = PAGE_TABLE_INDEX(stack_address_base);
+
+    struct page_table *user_stack_pt = (struct page_table *)vmm_alloc_page();
+    uint32_t user_stack_pt_addr      = vmm_get_phys_addr((void *)user_stack_pt);
+
+    struct page_table_entry stack_pt_entry = {
+        .present   = true,
+        .r_w       = true,
+        .user      = true,
+        .global_translation = true,
+    };
+    paging_set_page_table_addr(&stack_pt_entry, (uint32_t)pmm_alloc_page());
+
+    // User program believes that it's loaded at address = 0
+    user_stack_pt->entries[stack_page_table_index] = stack_pt_entry;
+
+    struct page_directory_entry stack_pd_entry = {
+        .present = true,
+        .r_w     = true,
+        .user    = true,
+        .global_translation = true,
+    };
+    paging_set_page_directory_addr(&stack_pd_entry, user_stack_pt_addr);
+
+    // stack will be place at the very top of the user's memory
+    kernel_page_directory->entries[stack_page_directory_index] = stack_pd_entry;
+
+
+
+
+    paging_flush_tlb();
+}

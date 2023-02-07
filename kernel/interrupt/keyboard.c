@@ -7,10 +7,9 @@
 #include <interrupt/interrupt.h>
 #include <interrupt/keyboard.h>
 #include <interrupt/keyboard_lut.h>
-#include <common/ringbuff.h>
 #include <terminal/tty.h>
 
-keyboard_t keyboard = {
+struct keyboard keyboard = {
     .len = 0,
     .head = 0,
     .tail = 0,
@@ -27,12 +26,12 @@ kb_state_t kb_state = {
     .esc     = 0,
 };
 
-bool kb_get_key(key_t *key)
+bool kb_get_key(struct key *key)
 {
     if (keyboard.len == 0) {
         return false;
     }
-    
+
     if (key) {
         *key = keyboard.buff[keyboard.head];
     }
@@ -45,7 +44,7 @@ bool kb_get_key(key_t *key)
 static void add_key(keycode_t key)
 {
     if (keyboard.len < sizeof(keyboard.buff)) {
-        key_t new = {
+        struct key new = {
             .key = key,
             .state = kb_state,
         };
@@ -86,7 +85,7 @@ static void isr_key_press() {
         tty_clear();
         return;
     }
-    
+
     switch (key) {
         case KEY_SHIFT:
             kb_state.shift = 1;
@@ -120,7 +119,7 @@ static void isr_key_press() {
     outb(0x20, 0x20);   // Send EOI
 }
 
-void keyboard_init() 
+void keyboard_init()
 {
     idt_handlers[33] = (idt_handler)&isr_key_press;
 }

@@ -28,6 +28,8 @@ LIBK_BIN_DEP 		:= 	stdio/printf.o		\
 						ctype/isupper.o		\
 						ctype/isxdigit.o	\
 
+USER_BIN_DEP	:= user_main.o
+
 # ---------------------------------------------- #
 
 all: libk.a

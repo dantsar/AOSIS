@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <common/cpu.h>
+#include <common/ports.h>
 #include <interrupt/keyboard.h>
 #include <interrupt/pic.h>
 #include <task/scheduler.h>
@@ -14,7 +15,7 @@
 
 #define NUM_ELEMENTS(x) (sizeof(x) / sizeof((x)[0]))
 
-extern keyboard_t keyboard;
+extern struct keyboard keyboard;
 
 static bool cmd_clear(void);
 static bool cmd_exit(void);
@@ -22,6 +23,8 @@ static bool cmd_demo(void);
 static bool cmd_help(void);
 static bool cmd_amogus(void);
 static bool cmd_print_tick(void);
+static bool cmd_reboot(void);
+
 static void command_start();
 static void command_run(char *cmd, size_t len);
 
@@ -32,18 +35,20 @@ static struct shell_command commands[] = {
     {.name = "exit",    .msg = "exit the console",      .cmd=cmd_exit},
     {.name = "demo",    .msg = "run a demo",            .cmd=cmd_demo},
     {.name = "amogus",  .msg = "sus",                   .cmd=cmd_amogus},
-    {.name = "tick",    .msg = "print timer tick",      .cmd=cmd_print_tick}
+    {.name = "tick",    .msg = "print timer tick",      .cmd=cmd_print_tick},
+    {.name = "reboot",  .msg = "reboot computer",       .cmd=cmd_reboot},
 };
 
 static char *amogus = \
-"   ###\n"
-"  ##--\n"
-"==##---\n"
-"==##---\n"
-"==#####\n"
-"==#####\n"
-"  ## ##\n"
-"  ## ##\n";
+"   ###            \n"
+"  ##--            \n"
+"==##---         ==\n"
+"==##---      $  ==\n"
+"==#####      $  ==\n"
+"==#####    #####==\n"
+"  ## ##    ## ##  \n"
+"  ## ##    ## ##  \n";
+
 
 static bool cmd_help()
 {
@@ -94,6 +99,16 @@ static bool cmd_print_tick(void)
     return true;
 }
 
+static bool cmd_reboot(void)
+{
+    #define KBRD_INTRFC 0x64 // Keyboard interface port
+    #define KBRD_RESET 0xFE  // Reset Keyboard command
+
+    outb(KBRD_INTRFC, KBRD_RESET); // Pulse CPU reset line
+
+    return true;
+}
+
 static void command_start() {
     tty_printstr("$> ");
 }
@@ -126,7 +141,7 @@ static void command_run(char *cmd, size_t len)
 
 void kshell()
 {
-    tty_printstr("Welcome to AOSIS: Run 'help' to get started!\n");
+    kprintf("\nWelcome to AOSIS: Run 'help' to get started!\n");
     command_start();
 
     char cmd[1024] = {0};
@@ -134,9 +149,8 @@ void kshell()
 
     for(;;) {
         halt();
-        scheduler(); // halt until an interrupt occurs
 
-        key_t k;
+        struct key k;
         if (kb_get_key(&k) == false) {
             continue;
         }

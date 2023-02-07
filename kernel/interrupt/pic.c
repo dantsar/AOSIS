@@ -2,9 +2,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <common/common_macros.h>
 #include <common/ports.h>
 #include <interrupt/pic.h>
 #include <interrupt/interrupt.h>
+#include <task/scheduler.h>
 #include <terminal/tty.h>
 
 extern idt_handler idt_handlers[256];
@@ -12,14 +14,18 @@ extern idt_handler idt_handlers[256];
 static bool print = true;
 
 static uint32_t tick = 0;
-static void pic_callback() // registers_t regs
+static void pic_callback(struct idt_registers regs) // struct idt_registers regs
 {
-   tick++;
-   if (print) {
-      tty_printstr("Tick: ");
-      tty_printint(tick);
-      tty_putc('\n');
-   }
+    UNUSED(regs);
+    tick++;
+    if (print)
+    {
+        tty_printstr("Tick: ");
+        tty_printint(tick);
+        tty_putc('\n');
+    }
+
+    scheduler();
 }
 
 uint32_t pic_get_tick(void)
@@ -33,10 +39,7 @@ void pic_init(uint32_t frequency, bool print_tick)
     print = print_tick;
 
     // setup timer handler
-    idt_handlers[32] = (idt_handler) &pic_callback;
-    tty_printstr("Timer frequency: ");
-    tty_printint(frequency);
-    tty_printstr("Hz\n");
+    idt_handlers[32] = (idt_handler)&pic_callback;
 
    // The value we send to the PIT is the value to divide it's input clock
    // (1193180 Hz) by, to get our required frequency. Important to note is

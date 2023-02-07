@@ -18,7 +18,7 @@ section .bss
 ; allocate stack
 global stack_top
 
-align 16
+align 4096
 stack_bottom:
 resb 4096 ; 4 KiB
 stack_top:
@@ -89,8 +89,10 @@ _start:
 .end:
 
 section .text
+
+[BITS 32]
 %include "interrupt/init_idt.asm"
-%include "boot/init_gdt.inc"
+%include "memory/init_gdt.asm"
 
 higher_half_kernel:
     ; update stack to virtual address
