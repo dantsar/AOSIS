@@ -95,7 +95,7 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     pic_init(timer_frequency, false);
 
     kprintf("[-] Initializing System Calls...\n");
-    syscall_init();
+    // syscall_init();
 
     // TODO: Make kshell a task!!! AND make boot_task the idle task...
     // Initialize Last

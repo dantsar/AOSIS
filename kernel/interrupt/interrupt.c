@@ -204,13 +204,20 @@ int interrupt_init()
                       idt_cfg[i].segment_selector, idt_cfg[i].flags);
     }
 
-    for (int i = last; i < 256; i++) {
-        idt_handlers[i] = (idt_handler) other_interrupt;
-        idt_set_entry(i, (uint32_t)other_interrupt, GDT_KERNEL_CODE_SEG, 0x8E);
+    for (int i = last; i < 256; i++)
+    {
+        if (i == 0x80U)
+        {
+            // idt_handlers[0x80] = (idt_handler)syscall_handler;
+            idt_set_entry(0x80, (uint32_t)syscall_handler, GDT_KERNEL_CODE_SEG, 0xEF);
+        }
+        else
+        {
+            idt_handlers[i] = (idt_handler)other_interrupt;
+            idt_set_entry(i, (uint32_t)other_interrupt, GDT_KERNEL_CODE_SEG, 0x8E);
+        }
     }
 
-    idt_handlers[0x80] = syscall_handler;
-    idt_set_entry(0x80, (uint32_t)other_interrupt, GDT_KERNEL_CODE_SEG, 0xEE);
 
     load_idt_asm();
 
