@@ -52,6 +52,7 @@ void task_userspace() __attribute__((section (".multiboot.text")));
 void task_userspace(void)
 {
     // asm volatile("cli"); // This should trigger a General Protection Fault
+    asm volatile("int $128");
     for (;;);
 
 }
