@@ -2,9 +2,9 @@
 #include <stddef.h>
 
 #include <interrupt/interrupt.h>
+#include <memory/gdt.h>
+#include <syscall/syscall.h>
 #include <terminal/tty.h>
-
-#define KERNEL_CODE_SEGMENT (0x08)
 
 extern void load_idt_asm();
 
@@ -149,54 +149,54 @@ int interrupt_init()
     };
 
     static struct idt_config idt_cfg[48] = {
-        { 0,  (uint32_t)isr0,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 1,  (uint32_t)isr1,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 2,  (uint32_t)isr2,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 3,  (uint32_t)isr3,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 4,  (uint32_t)isr4,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 5,  (uint32_t)isr5,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 6,  (uint32_t)isr6,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 7,  (uint32_t)isr7,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 8,  (uint32_t)isr8,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 9,  (uint32_t)isr9,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 10, (uint32_t)isr10, KERNEL_CODE_SEGMENT, 0x8E },
-        { 11, (uint32_t)isr11, KERNEL_CODE_SEGMENT, 0x8E },
-        { 12, (uint32_t)isr12, KERNEL_CODE_SEGMENT, 0x8E },
-        { 13, (uint32_t)isr13, KERNEL_CODE_SEGMENT, 0x8E },
-        { 14, (uint32_t)isr14, KERNEL_CODE_SEGMENT, 0x8E },
-        { 15, (uint32_t)isr15, KERNEL_CODE_SEGMENT, 0x8E },
-        { 16, (uint32_t)isr16, KERNEL_CODE_SEGMENT, 0x8E },
-        { 17, (uint32_t)isr17, KERNEL_CODE_SEGMENT, 0x8E },
-        { 18, (uint32_t)isr18, KERNEL_CODE_SEGMENT, 0x8E },
-        { 19, (uint32_t)isr19, KERNEL_CODE_SEGMENT, 0x8E },
-        { 20, (uint32_t)isr20, KERNEL_CODE_SEGMENT, 0x8E },
-        { 21, (uint32_t)isr21, KERNEL_CODE_SEGMENT, 0x8E },
-        { 22, (uint32_t)isr22, KERNEL_CODE_SEGMENT, 0x8E },
-        { 23, (uint32_t)isr23, KERNEL_CODE_SEGMENT, 0x8E },
-        { 24, (uint32_t)isr24, KERNEL_CODE_SEGMENT, 0x8E },
-        { 25, (uint32_t)isr25, KERNEL_CODE_SEGMENT, 0x8E },
-        { 26, (uint32_t)isr26, KERNEL_CODE_SEGMENT, 0x8E },
-        { 27, (uint32_t)isr27, KERNEL_CODE_SEGMENT, 0x8E },
-        { 28, (uint32_t)isr28, KERNEL_CODE_SEGMENT, 0x8E },
-        { 29, (uint32_t)isr29, KERNEL_CODE_SEGMENT, 0x8E },
-        { 30, (uint32_t)isr30, KERNEL_CODE_SEGMENT, 0x8E },
-        { 31, (uint32_t)isr31, KERNEL_CODE_SEGMENT, 0x8E },
-        { 32, (uint32_t)irq0,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 33, (uint32_t)irq1,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 34, (uint32_t)irq2,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 35, (uint32_t)irq3,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 36, (uint32_t)irq4,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 37, (uint32_t)irq5,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 38, (uint32_t)irq6,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 39, (uint32_t)irq7,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 40, (uint32_t)irq8,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 41, (uint32_t)irq9,  KERNEL_CODE_SEGMENT, 0x8E },
-        { 42, (uint32_t)irq10, KERNEL_CODE_SEGMENT, 0x8E },
-        { 43, (uint32_t)irq11, KERNEL_CODE_SEGMENT, 0x8E },
-        { 44, (uint32_t)irq12, KERNEL_CODE_SEGMENT, 0x8E },
-        { 45, (uint32_t)irq13, KERNEL_CODE_SEGMENT, 0x8E },
-        { 46, (uint32_t)irq14, KERNEL_CODE_SEGMENT, 0x8E },
-        { 47, (uint32_t)irq15, KERNEL_CODE_SEGMENT, 0x8E },
+        { 0,  (uint32_t)isr0,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 1,  (uint32_t)isr1,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 2,  (uint32_t)isr2,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 3,  (uint32_t)isr3,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 4,  (uint32_t)isr4,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 5,  (uint32_t)isr5,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 6,  (uint32_t)isr6,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 7,  (uint32_t)isr7,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 8,  (uint32_t)isr8,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 9,  (uint32_t)isr9,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 10, (uint32_t)isr10, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 11, (uint32_t)isr11, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 12, (uint32_t)isr12, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 13, (uint32_t)isr13, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 14, (uint32_t)isr14, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 15, (uint32_t)isr15, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 16, (uint32_t)isr16, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 17, (uint32_t)isr17, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 18, (uint32_t)isr18, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 19, (uint32_t)isr19, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 20, (uint32_t)isr20, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 21, (uint32_t)isr21, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 22, (uint32_t)isr22, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 23, (uint32_t)isr23, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 24, (uint32_t)isr24, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 25, (uint32_t)isr25, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 26, (uint32_t)isr26, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 27, (uint32_t)isr27, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 28, (uint32_t)isr28, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 29, (uint32_t)isr29, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 30, (uint32_t)isr30, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 31, (uint32_t)isr31, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 32, (uint32_t)irq0,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 33, (uint32_t)irq1,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 34, (uint32_t)irq2,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 35, (uint32_t)irq3,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 36, (uint32_t)irq4,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 37, (uint32_t)irq5,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 38, (uint32_t)irq6,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 39, (uint32_t)irq7,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 40, (uint32_t)irq8,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 41, (uint32_t)irq9,  GDT_KERNEL_CODE_SEG, 0x8E },
+        { 42, (uint32_t)irq10, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 43, (uint32_t)irq11, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 44, (uint32_t)irq12, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 45, (uint32_t)irq13, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 46, (uint32_t)irq14, GDT_KERNEL_CODE_SEG, 0x8E },
+        { 47, (uint32_t)irq15, GDT_KERNEL_CODE_SEG, 0x8E },
     };
     int last = 47;
     for (int i = 0; i <= last; i++) {
@@ -206,8 +206,11 @@ int interrupt_init()
 
     for (int i = last; i < 256; i++) {
         idt_handlers[i] = (idt_handler) other_interrupt;
-        idt_set_entry(i, (uint32_t)other_interrupt, 0x08, 0x8E);
+        idt_set_entry(i, (uint32_t)other_interrupt, GDT_KERNEL_CODE_SEG, 0x8E);
     }
+
+    idt_handlers[0x80] = syscall_handler;
+    idt_set_entry(0x80, (uint32_t)other_interrupt, GDT_KERNEL_CODE_SEG, 0xEE);
 
     load_idt_asm();
 

@@ -21,6 +21,7 @@
 #include <terminal/shell.h>
 #include <terminal/tty.h>
 #include <terminal/vga.h>
+#include <syscall/syscall.h>
 
 // // used to test interrupts
 // extern void div_zero(void);
@@ -92,6 +93,9 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     uint32_t timer_frequency = 20;
     kprintf("[-] Initializing Timer (Freq: %dHz)...\n", timer_frequency);
     pic_init(timer_frequency, false);
+
+    kprintf("[-] Initializing System Calls...\n");
+    syscall_init();
 
     // TODO: Make kshell a task!!! AND make boot_task the idle task...
     // Initialize Last
