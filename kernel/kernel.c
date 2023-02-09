@@ -74,6 +74,8 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
     kprintf("[-] Initializing Virtual Memory Manager...\n");
     vmm_init(initial_page_table);
 
+    // -----------------------
+
     gdt_load_tss_asm();
 
     task_init();
@@ -87,15 +89,19 @@ void kmain(struct multiboot_info *mbt, uint32_t magic)
 
     paging_add_temp_userspace(); // KLUDGE TODO: DELETE!
 
+    // -----------------------
+
+
+    // kprintf("[-] Initializing System Calls...\n");
+    // syscall_init();
+
     kprintf("[-] Initializing Keyboard...\n");
     keyboard_init();
 
-    uint32_t timer_frequency = 20;
+    uint32_t timer_frequency = 100;
     kprintf("[-] Initializing Timer (Freq: %dHz)...\n", timer_frequency);
     pic_init(timer_frequency, false);
 
-    kprintf("[-] Initializing System Calls...\n");
-    // syscall_init();
 
     // TODO: Make kshell a task!!! AND make boot_task the idle task...
     // Initialize Last

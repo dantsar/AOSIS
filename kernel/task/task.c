@@ -37,7 +37,7 @@ void task_test()
         {
             previous_tick = tick;
 
-            // kprintf("Task_test: %d (SWITCHING TASK)\n", tick);
+            // kprintf("Task_test: %d\n", tick);
 
             // do something here and print to the screen
         }
@@ -49,9 +49,11 @@ void task_test()
 
 // need to add this to the page table
 void task_userspace() __attribute__((section (".multiboot.text")));
+
 void task_userspace(void)
 {
     asm volatile("int $0x80");
+
     // asm volatile("cli"); // This should trigger a General Protection Fault
     for (;;);
 
