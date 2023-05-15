@@ -24,6 +24,7 @@ KERNEL_SOURCE       :=  kernel.o                	\
                         task/task_switch.o			\
                         terminal/tty.o          	\
                         terminal/kshell.o       	\
+                        syscall/syscall.o			\
                         libk.a                  	\
                         # rust/librust.a			\
 
