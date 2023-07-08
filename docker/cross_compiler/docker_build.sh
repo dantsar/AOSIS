@@ -15,9 +15,9 @@ docker_image="aosis_build_env"
 echo ${code}
 
 # https://stackoverflow.com/a/30543453
-# if [[ "$(docker images -q ${docker_image} 2> /dev/null)" == "" ]]; then
-#     docker build -t ${docker_image} "${code}/cross_compiler"
-# fi
+if [[ "$(docker images -q ${docker_image} 2> /dev/null)" == "" ]]; then
+    docker build -t ${docker_image} "${code}/docker/cross_compiler"
+fi
 
 echo "RUNNING CROSS_COMPILER IMAGE"
 docker run -it --rm     \
