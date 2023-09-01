@@ -198,6 +198,7 @@ int interrupt_init()
         { 46, (uint32_t)irq14, GDT_KERNEL_CODE_SEG, 0x8E },
         { 47, (uint32_t)irq15, GDT_KERNEL_CODE_SEG, 0x8E },
     };
+
     int last = 47;
     for (int i = 0; i <= last; i++) {
         idt_set_entry(idt_cfg[i].index, idt_cfg[i].handler,
@@ -217,7 +218,6 @@ int interrupt_init()
             idt_set_entry(i, (uint32_t)other_interrupt, GDT_KERNEL_CODE_SEG, 0x8E);
         }
     }
-
 
     load_idt_asm();
 

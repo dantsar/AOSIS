@@ -69,7 +69,6 @@ struct trapframe
     uint32_t ss;
 };
 
-
 void task_init(void);
 
 void task_update_trapframe(struct trapframe *tf);

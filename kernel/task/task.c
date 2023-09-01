@@ -33,7 +33,7 @@ void task_test()
     while (1)
     {
         uint32_t tick = pic_get_tick();
-        if (tick >= (previous_tick + 2)) // ~5 seconds since tick rate is 20/sec
+        if (tick >= (previous_tick + 10)) // ~5 seconds since tick rate is 20/sec
         {
             previous_tick = tick;
 
@@ -54,9 +54,8 @@ void task_userspace(void)
 {
     asm volatile("int $0x80");
 
-    // asm volatile("cli"); // This should trigger a General Protection Fault
+    asm volatile("cli"); // This should trigger a General Protection Fault
     for (;;);
-
 }
 
 // ---------------- DONE TESTING TASKS ----------------
@@ -98,7 +97,6 @@ void task_create_kernel(void) // TODO: as an argument, take the address to the s
     memset(alloc_stack, 0U, PAGE_SIZE);
 
     new_task->kernel_stack_base = (uint32_t)alloc_stack + PAGE_SIZE;
-
 
     new_task->trapframe = (struct trapframe *)(new_task->kernel_stack_base - (sizeof(struct trapframe) - 8)); // -8 because there are no user elements
 

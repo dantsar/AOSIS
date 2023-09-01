@@ -156,7 +156,7 @@ void kfree(void *ptr)
         return;
     }
 
-    // the general logic for freeing an element,is that you increment the pointer to get the header
+    // the general logic for freeing an element, is that you increment the pointer to get the header
     // then check if you can coalesce the block to the right (next element in the free list) {pointer math}
     // then loop through the list to get the prev element, and check if you can coalesce to the left
 

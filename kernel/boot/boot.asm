@@ -40,13 +40,11 @@ _start:
     ; To set up a stack, we set the esp register to point to the top of our
 	mov esp, (stack_top - KERNEL_VIRTUAL_BASE)
 
-	; arugments for kmain provided by grub
-	; multiboot magic number
-	push eax
-	; address to struct multiboot_info
-	push ebx
+	; arugments for kmain provided by GRUB that describe the system
+	push eax ; multiboot magic number
+	push ebx ; address to struct multiboot_info
 
-    ; add pages to the page table (assumes at least 4MB1of memory)
+    ; add pages to the page table (assumes at least 4MB of memory)
     mov eax, 0x0    ; starting page frame
     mov ebx, 0x0    ; page table entry
     mov ecx, 0      ; counter for loop
@@ -64,7 +62,6 @@ _start:
         inc ecx
         cmp ecx, edx
         jl .identity_map_kernel
-
 
     ; add page table to the page directory
     mov eax, (temp_page_table - KERNEL_VIRTUAL_BASE)
@@ -114,7 +111,7 @@ higher_half_kernel:
 .hang:
 	jmp .hang
 
-; nasm MACROS (not actual date)
+; nasm MACROS (not actual data)
 PAGE_WRITEABLE:      equ (0x01)
 PAGE_PRESENT:        equ (0x02)
 PAGES_IN_PAGE_TABLE: equ (1024)

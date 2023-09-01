@@ -81,7 +81,6 @@ static struct gdt_pointer gdt_descriptor              = { 0 };
 
 struct tss tss_region = { 0 };
 
-
 static struct gdt_entry gdt_create_entry(uint32_t segment_limit, // 20-bit value
                                          uint32_t base,          // Segment base address
                                          uint8_t access_byte,    // Segment access rules

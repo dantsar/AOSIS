@@ -6,7 +6,7 @@
 
 void syscall_init(void)
 {
-    // idt_handlers[0x80] = syscall_handler;
+    idt_handlers[0x80] = syscall_handler;
 }
 
 void syscall_handler()

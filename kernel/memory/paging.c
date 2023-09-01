@@ -276,8 +276,6 @@ void paging_add_temp_userspace(void)
     kernel_page_directory->entries[0] = user_pd_entry;
     /* ************** done testing userspace **************/
 
-
-
     // Allocate memory for the stack
     uint32_t stack_address_base         = (KERNEL_VIRT_BASE - PAGE_SIZE);
     uint32_t stack_page_directory_index = PAGE_DIRECTORY_INDEX(stack_address_base);
@@ -307,9 +305,6 @@ void paging_add_temp_userspace(void)
 
     // stack will be place at the very top of the user's memory
     kernel_page_directory->entries[stack_page_directory_index] = stack_pd_entry;
-
-
-
 
     paging_flush_tlb();
 }

@@ -26,9 +26,9 @@ struct physical_memory
 static struct physical_memory pmm = {
     .total_memory       = 0U,
     .total_page_memory  = 0U,
-    .starting_addr = NULL,
+    .starting_addr      = NULL,
     .page_count         = 0U,
-    .bitmap  = { 0 }
+    .bitmap             = { 0 }
 };
 
 static void pmm_init_struct(void *last_mem_addr)
