@@ -80,7 +80,7 @@ static void vmm_add_vmm_block(struct vmm_block_desc *vmm_block)
     // Initialize the new vmm block descriptor
     new_vmm_block->high_water_mark = 0;
     new_vmm_block->free_pages      = PAGE_TABLE_INDICES;
-    new_vmm_block->next_vmm_block = NULL;
+    new_vmm_block->next_vmm_block  = NULL;
 
     // Virtual address of the next vmm block's page table
     new_vmm_block->page_table = (void *)((uint32_t)vmm_block->first_page + (HIGH_WATER_THRESHOLD * PAGE_SIZE));

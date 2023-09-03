@@ -54,7 +54,7 @@ void task_userspace(void)
 {
     asm volatile("int $0x80");
 
-    asm volatile("cli"); // This should trigger a General Protection Fault
+    // asm volatile("cli"); // This should trigger a General Protection Fault
     for (;;);
 }
 
